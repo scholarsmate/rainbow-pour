@@ -1,0 +1,86 @@
+[gd_scene load_steps=3 format=3 uid="uid://beaker_scene_001"]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/towers.gd" id="2_towers"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_main")
+move_label = "Pours"
+win_label = "pours"
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.12, 0.14, 0.17, 1)
+mouse_filter = 2
+
+[node name="Towers" type="Node2D" parent="."]
+script = ExtResource("2_towers")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="MoveCounter" type="Label" parent="UI"]
+anchor_left = 0.0
+anchor_right = 1.0
+offset_top = 46.0
+offset_bottom = 76.0
+theme_override_font_sizes/font_size = 22
+text = "Pours: 0"
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="UI"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -180.0
+offset_top = 8.0
+offset_right = 180.0
+offset_bottom = 44.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 28
+text = "Water Sort"
+horizontal_alignment = 1
+
+[node name="Instructions" type="Label" parent="UI"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -360.0
+offset_top = -70.0
+offset_right = 360.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 18
+text = "Click a beaker to select it, then click another to pour.\nYou can only pour if the top colors match (or destination is empty). Sort all colors to win!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ResetButton" type="Button" parent="UI"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -230.0
+offset_top = 20.0
+offset_right = -120.0
+offset_bottom = 60.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 20
+text = "Reset"
+
+[node name="MenuButton" type="Button" parent="UI"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -110.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 60.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 20
+text = "Menu"
+
+[connection signal="pressed" from="UI/ResetButton" to="." method="reset_game"]
+[connection signal="pressed" from="UI/MenuButton" to="." method="go_to_menu"]
