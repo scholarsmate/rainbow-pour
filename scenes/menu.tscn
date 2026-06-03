@@ -66,39 +66,6 @@ theme_override_font_sizes/font_size = 22
 text = "🧪 Water Sort\n\nSort all liquids\ninto pure beakers"
 autowrap_mode = 3
 
-[node name="DepthRow" type="HBoxContainer" parent="."]
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -280.0
-offset_top = -100.0
-offset_right = 280.0
-offset_bottom = -60.0
-grow_horizontal = 2
-grow_vertical = 0
-alignment = 1
-theme_override_constants/separation = 16
-
-[node name="DepthLabel" type="Label" parent="DepthRow"]
-theme_override_font_sizes/font_size = 20
-text = "Slots per beaker:"
-vertical_alignment = 1
-
-[node name="DepthSlider" type="HSlider" parent="DepthRow"]
-custom_minimum_size = Vector2(260, 32)
-min_value = 4.0
-max_value = 10.0
-step = 1.0
-value = 4.0
-
-[node name="DepthValue" type="Label" parent="DepthRow"]
-custom_minimum_size = Vector2(28, 0)
-theme_override_font_sizes/font_size = 20
-text = "4"
-vertical_alignment = 1
 
 [connection signal="pressed" from="Buttons/HanoiButton" to="." method="_on_hanoi_pressed"]
 [connection signal="pressed" from="Buttons/BeakerButton" to="." method="_on_beaker_pressed"]
-[connection signal="value_changed" from="DepthRow/DepthSlider" to="." method="_on_depth_changed"]

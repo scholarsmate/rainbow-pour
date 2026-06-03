@@ -5,7 +5,7 @@
 The project includes:
 
 1. **Project Configuration** (`project.godot`)
-   - Set up for Godot 4.2
+   - Set up for Godot 4.6
    - 1280x720 resolution
    - 2D rendering mode
 
@@ -21,6 +21,7 @@ The project includes:
 ## Features Implemented
 
 - ✅ 3 towers with configurable disk count (default: 5)
+- ✅ Water Sort: beaker capacity slider (in-game, Water Sort screen only)
 - ✅ Rainbow-colored disks
 - ✅ Click-based disk movement
 - ✅ Valid move checking (larger disks can't go on smaller ones)
@@ -49,7 +50,6 @@ The project includes:
 - [ ] Add music
 - [ ] Add visual selection indicator for selected tower
 - [ ] Add disk dragging support
-- [ ] Add settings menu
 
 ## How to Run
 

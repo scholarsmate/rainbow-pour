@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://hanoi_scene_001"]
+[gd_scene load_steps=6 format=3 uid="uid://hanoi_scene_001"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/hanoi.gd" id="2_hanoi"]
+[ext_resource type="Script" path="res://scripts/game_settings.gd" id="3_settings"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
@@ -84,3 +85,38 @@ text = "Menu"
 
 [connection signal="pressed" from="UI/ResetButton" to="." method="reset_game"]
 [connection signal="pressed" from="UI/MenuButton" to="." method="go_to_menu"]
+
+[node name="SettingsRow" type="HBoxContainer" parent="."]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -280.0
+offset_top = -100.0
+offset_right = 280.0
+offset_bottom = -60.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+theme_override_constants/separation = 16
+
+[node name="DepthLabel" type="Label" parent="SettingsRow"]
+theme_override_font_sizes/font_size = 20
+text = "Slots per beaker:"
+vertical_alignment = 1
+
+[node name="DepthSlider" type="HSlider" parent="SettingsRow"]
+custom_minimum_size = Vector2(260, 32)
+min_value = 4.0
+max_value = 10.0
+step = 1.0
+value = 4.0
+
+[node name="DepthValue" type="Label" parent="SettingsRow"]
+custom_minimum_size = Vector2(28, 0)
+theme_override_font_sizes/font_size = 20
+text = "4"
+vertical_alignment = 1
+
+[connection signal="value_changed" from="SettingsRow/DepthSlider" to="." method="_on_depth_changed"]
