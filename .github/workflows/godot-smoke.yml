@@ -1,0 +1,39 @@
+name: Godot smoke
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  smoke:
+    name: Import and load scenes
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Godot
+        shell: bash
+        run: |
+          set -euo pipefail
+          GODOT_VERSION="4.6.3"
+          GODOT_ZIP="Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          curl -L "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/${GODOT_ZIP}" -o godot.zip
+          unzip -q godot.zip
+          chmod +x "Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot
+
+      - name: Import project
+        run: ./godot --headless --path . --import
+
+      - name: Smoke load scenes
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./godot --headless --path . --scene res://scenes/menu.tscn --quit-after 3
+          ./godot --headless --path . --scene res://scenes/beaker.tscn --quit-after 3
+          ./godot --headless --path . --scene res://scenes/hanoi.tscn --quit-after 3

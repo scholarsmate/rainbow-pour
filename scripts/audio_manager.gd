@@ -2,6 +2,10 @@ extends Node
 
 const MUSIC_BUS := "Music"
 const EFFECTS_BUS := "Effects"
+const MUSIC_VOLUME_DB := -22.0
+const MUSIC_FADE_DB := -38.0
+const MUSIC_LOOP_BASE_SECONDS := 63.0
+const MUSIC_LOOP_LIMIT_SECONDS := 58.0
 
 var _click: AudioStreamPlayer
 var _select: AudioStreamPlayer
@@ -13,11 +17,18 @@ var _invalid: AudioStreamPlayer
 var _win: AudioStreamPlayer
 var _loss: AudioStreamPlayer
 var _music: AudioStreamPlayer
+var _game_music_stream: AudioStream
+var _menu_music_stream: AudioStream
+var _solved_music_stream: AudioStream
+var _failed_music_stream: AudioStream
+var _music_mode := ""
+var _music_transition_tween: Tween
 var _star_boom_players: Array[AudioStreamPlayer] = []
 var _star_boom_next := 0
 var _pour_streams: Array[AudioStream] = []
 var _pour_splashes: Array[AudioStream] = []
 var _pour_stop_tween: Tween
+var _loop_pressure := 0.0
 
 func _ready():
 	var headless := DisplayServer.get_name() == "headless"
@@ -39,10 +50,14 @@ func _ready():
 	for i in 5:
 		_star_boom_players.append(_add(star_boom_stream, -0.8, EFFECTS_BUS))
 	if not headless:
-		_music = _add(_gen_music_loop(), -22.0, MUSIC_BUS)
+		_game_music_stream = _gen_music_loop()
+		_menu_music_stream = _gen_menu_music_loop()
+		_solved_music_stream = _gen_result_music_loop(true)
+		_failed_music_stream = _gen_result_music_loop(false)
+		_music = _add(_game_music_stream, MUSIC_VOLUME_DB, MUSIC_BUS)
 	apply_volume_settings()
 	if _music:
-		_music.play()
+		play_game_music(0.0, false)
 
 func _exit_tree():
 	_stop_all()
@@ -50,6 +65,8 @@ func _exit_tree():
 func _stop_all():
 	if _pour_stop_tween and _pour_stop_tween.is_valid():
 		_pour_stop_tween.kill()
+	if _music_transition_tween and _music_transition_tween.is_valid():
+		_music_transition_tween.kill()
 	for child in get_children():
 		if child is AudioStreamPlayer:
 			child.stop()
@@ -87,6 +104,53 @@ func set_music_volume(value: float) -> void:
 
 func set_effects_volume(value: float) -> void:
 	_set_bus_volume(EFFECTS_BUS, value)
+
+func play_game_music(progress: float = 0.0, fade: bool = true) -> void:
+	_loop_pressure = clampf(progress, 0.0, 1.0)
+	_switch_music("game", _game_music_stream, _game_pitch_scale(), fade)
+
+func play_menu_music(fade: bool = true) -> void:
+	_switch_music("menu", _menu_music_stream, 1.0, fade)
+
+func play_solved_music() -> void:
+	_switch_music("solved", _solved_music_stream, 1.0, true)
+
+func play_failed_music() -> void:
+	_switch_music("failed", _failed_music_stream, 1.0, true)
+
+func set_loop_pressure(progress: float) -> void:
+	_loop_pressure = clampf(progress, 0.0, 1.0)
+	if not _music or _music_mode != "game":
+		return
+	_music.pitch_scale = _game_pitch_scale()
+
+func _game_pitch_scale() -> float:
+	var eased := smoothstep(0.0, 1.0, _loop_pressure)
+	return lerpf(1.0, MUSIC_LOOP_BASE_SECONDS / MUSIC_LOOP_LIMIT_SECONDS, eased)
+
+func _switch_music(mode: String, stream: AudioStream, pitch_scale: float, fade: bool) -> void:
+	if not _music or not stream:
+		return
+	if _music_mode == mode:
+		_music.pitch_scale = pitch_scale
+		if not _music.playing:
+			_music.play()
+		return
+	if _music_transition_tween and _music_transition_tween.is_valid():
+		_music_transition_tween.kill()
+	var apply_stream := func():
+		_music_mode = mode
+		_music.stream = stream
+		_music.pitch_scale = pitch_scale
+		_music.play()
+	if not fade:
+		apply_stream.call()
+		_music.volume_db = MUSIC_VOLUME_DB
+		return
+	_music_transition_tween = create_tween()
+	_music_transition_tween.tween_property(_music, "volume_db", MUSIC_FADE_DB, 0.16)
+	_music_transition_tween.tween_callback(apply_stream)
+	_music_transition_tween.tween_property(_music, "volume_db", MUSIC_VOLUME_DB, 0.24)
 
 func _add(stream: AudioStream = null, volume_db: float = 0.0, bus_name: String = EFFECTS_BUS) -> AudioStreamPlayer:
 	var p = AudioStreamPlayer.new()
@@ -305,9 +369,41 @@ func _gen_star_boom() -> AudioStreamWAV:
 		b.encode_s16(i * 2, clampi(v, -32768, 32767))
 	return _wav(b)
 
+func _music_kick(hit_t: float, amp: float = 1.0) -> float:
+	var attack := minf(1.0, hit_t / 0.012)
+	var tail := exp(-hit_t * 24.0)
+	var drop := 84.0 - 50.0 * minf(1.0, hit_t / 0.13)
+	var sub := sin(TAU * drop * hit_t) * attack * tail * 0.34
+	var low := sin(TAU * 43.0 * hit_t) * exp(-hit_t * 13.0) * 0.21
+	var knock := sin(TAU * 118.0 * hit_t) * exp(-hit_t * 38.0) * 0.055
+	var click := randf_range(-1.0, 1.0) * attack * exp(-hit_t * 120.0) * 0.028
+	return (sub + low + knock + click) * amp
+
+func _music_snare(hit_t: float, amp: float = 1.0) -> float:
+	var snap := randf_range(-1.0, 1.0) * exp(-hit_t * 58.0) * 0.070
+	var wash := randf_range(-1.0, 1.0) * exp(-hit_t * 19.0) * 0.055
+	var body := sin(TAU * 178.0 * hit_t) * exp(-hit_t * 18.0) * 0.046
+	var ring := sin(TAU * 348.0 * hit_t) * exp(-hit_t * 24.0) * 0.018
+	return (snap + wash + body + ring) * amp
+
+func _loop_hz(hz: float, dur: float) -> float:
+	return round(hz * dur) / dur
+
+func _quantize_notes(notes: Array, dur: float) -> Array:
+	var quantized := []
+	for hz in notes:
+		quantized.append(_loop_hz(float(hz), dur))
+	return quantized
+
+func _quantize_chords(chords: Array, dur: float) -> Array:
+	var quantized := []
+	for chord in chords:
+		quantized.append(_quantize_notes(chord, dur))
+	return quantized
+
 func _gen_music_loop() -> AudioStreamWAV:
 	var rate := 22050
-	var dur := 64.0
+	var dur := MUSIC_LOOP_BASE_SECONDS
 	var n := int(rate * dur)
 	var b := PackedByteArray(); b.resize(n * 2)
 	var chords := [
@@ -328,7 +424,8 @@ func _gen_music_loop() -> AudioStreamWAV:
 		[329.63, 440.00, 659.25],
 		[246.94, 329.63, 392.00],
 	]
-	var ripples := [
+	chords = _quantize_chords(chords, dur)
+	var ripples := _quantize_notes([
 		659.25, 783.99, 880.00, 987.77,
 		783.99, 659.25, 587.33, 523.25,
 		698.46, 880.00, 987.77, 1046.50,
@@ -337,13 +434,18 @@ func _gen_music_loop() -> AudioStreamWAV:
 		1046.50, 880.00, 783.99, 659.25,
 		587.33, 659.25, 783.99, 880.00,
 		987.77, 880.00, 659.25, 523.25,
-	]
+	], dur)
+	var chord_step := dur / float(chords.size())
+	var kick_hits := [0.0, chord_step * 0.25, chord_step * 0.4375, chord_step * 0.625, chord_step * 0.75]
+	var kick_amps := [1.08, 0.76, 0.60, 0.94, 0.52]
+	var snare_hits := [chord_step * 0.1875, chord_step * 0.375, chord_step * 0.5625, chord_step * 0.84375]
+	var snare_amps := [0.44, 0.86, 0.38, 0.66]
+	var low_hz := _loop_hz(110.0, dur)
 	for i in n:
 		var t := float(i) / rate
-		var fade := minf(1.0, minf(t / 0.9, (dur - t) / 0.9))
-		var chord_idx := int(t / 4.0) % chords.size()
+		var chord_idx := int(t / chord_step) % chords.size()
 		var chord: Array = chords[chord_idx]
-		var section_swell := 0.92 + 0.08 * sin(TAU * t / 32.0)
+		var section_swell := 0.92 + 0.08 * sin(TAU * t / (dur * 0.5))
 		var sample := 0.0
 		for hz in chord:
 			var hz_f := float(hz)
@@ -357,7 +459,136 @@ func _gen_music_loop() -> AudioStreamWAV:
 		if int(t * 2.0) % 16 == 7:
 			var echo_t := fmod(t + 0.18, 0.5)
 			sample += sin(TAU * ripple_hz * 0.5 * t) * exp(-echo_t * 7.0) * 0.026
-		sample += sin(TAU * (110.0 + sin(t * 0.75) * 8.0) * t) * 0.030
-		var v := int(sample * fade * 32767.0)
+		sample += sin(TAU * low_hz * t + sin(TAU * 8.0 * t / dur) * 0.18) * 0.036
+		var pattern_t := fmod(t, chord_step)
+		for hit_idx in kick_hits.size():
+			var hit_t := pattern_t - float(kick_hits[hit_idx])
+			if hit_t >= 0.0 and hit_t < 0.19:
+				sample += _music_kick(hit_t, float(kick_amps[hit_idx]))
+		for hit_idx in snare_hits.size():
+			var hit_t := pattern_t - float(snare_hits[hit_idx])
+			if hit_t >= 0.0 and hit_t < 0.22:
+				sample += _music_snare(hit_t, float(snare_amps[hit_idx]))
+		var v := int(sample * 32767.0)
+		b.encode_s16(i * 2, clampi(v, -32768, 32767))
+	return _wav(b, rate, true)
+
+func _gen_menu_music_loop() -> AudioStreamWAV:
+	var rate := 22050
+	var dur := 32.0
+	var n := int(rate * dur)
+	var b := PackedByteArray(); b.resize(n * 2)
+	var chords := _quantize_chords([
+		[261.63, 329.63, 392.00, 523.25],
+		[293.66, 349.23, 440.00, 587.33],
+		[246.94, 329.63, 392.00, 493.88],
+		[261.63, 349.23, 440.00, 523.25],
+		[329.63, 392.00, 493.88, 659.25],
+		[293.66, 369.99, 440.00, 587.33],
+		[246.94, 329.63, 415.30, 493.88],
+		[261.63, 329.63, 392.00, 523.25],
+	], dur)
+	var melody := _quantize_notes([
+		659.25, 783.99, 880.00, 783.99,
+		587.33, 659.25, 783.99, 659.25,
+		523.25, 587.33, 659.25, 783.99,
+		880.00, 783.99, 659.25, 523.25,
+	], dur)
+	var chord_step := dur / float(chords.size())
+	var note_step := dur / float(melody.size())
+	var low_hz := _loop_hz(65.41, dur)
+	var shimmer_hz := _loop_hz(1318.51, dur)
+	for i in n:
+		var t := float(i) / rate
+		var chord_idx := int(t / chord_step) % chords.size()
+		var chord: Array = chords[chord_idx]
+		var sample := 0.0
+		var swell := 0.86 + 0.14 * sin(TAU * t / dur)
+		for hz in chord:
+			var hz_f := float(hz)
+			sample += sin(TAU * hz_f * 0.5 * t) * 0.038 * swell
+			sample += sin(TAU * hz_f * t) * 0.010
+
+		var note_t := fmod(t, note_step)
+		var note_idx := int(t / note_step) % melody.size()
+		var note_hz := float(melody[note_idx])
+		var bell_env := exp(-note_t * 5.8)
+		sample += sin(TAU * note_hz * t) * bell_env * 0.042
+		sample += sin(TAU * note_hz * 2.0 * t) * bell_env * 0.012
+
+		var ripple_t := fmod(t + note_step * 0.5, note_step)
+		if ripple_t < note_step * 0.62:
+			sample += sin(TAU * shimmer_hz * 0.5 * t) * exp(-ripple_t * 7.0) * 0.014
+		sample += sin(TAU * low_hz * t + sin(TAU * 2.0 * t / dur) * 0.16) * 0.024
+
+		var v := int(sample * 32767.0)
+		b.encode_s16(i * 2, clampi(v, -32768, 32767))
+	return _wav(b, rate, true)
+
+func _gen_result_music_loop(solved: bool) -> AudioStreamWAV:
+	var rate := 22050
+	var dur := 16.0
+	var n := int(rate * dur)
+	var b := PackedByteArray(); b.resize(n * 2)
+	var chords := []
+	var melody := []
+	if solved:
+		chords = [
+			[261.63, 329.63, 392.00, 523.25],
+			[293.66, 369.99, 440.00, 587.33],
+			[329.63, 392.00, 493.88, 659.25],
+			[392.00, 493.88, 587.33, 783.99],
+		]
+		melody = [783.99, 987.77, 1046.50, 1318.51, 1174.66, 987.77, 880.00, 1046.50]
+	else:
+		chords = [
+			[220.00, 261.63, 329.63],
+			[196.00, 246.94, 293.66],
+			[174.61, 220.00, 261.63],
+			[196.00, 233.08, 293.66],
+		]
+		melody = [392.00, 349.23, 329.63, 293.66, 261.63, 246.94, 220.00, 196.00]
+
+	chords = _quantize_chords(chords, dur)
+	melody = _quantize_notes(melody, dur)
+	var failed_low_hz := _loop_hz(72.0, dur)
+	for i in n:
+		var t := float(i) / rate
+		var chord_idx := int(t / 4.0) % chords.size()
+		var chord: Array = chords[chord_idx]
+		var sample := 0.0
+		for hz in chord:
+			var hz_f := float(hz)
+			if solved:
+				sample += sin(TAU * hz_f * 0.5 * t) * 0.035
+				sample += sin(TAU * hz_f * t) * 0.012
+			else:
+				sample += sin(TAU * hz_f * 0.5 * t) * 0.045
+				sample += sin(TAU * hz_f * 0.25 * t) * 0.020
+
+		if solved:
+			var step := 0.50
+			var note_t := fmod(t, step)
+			var note_idx := int(t / step) % melody.size()
+			var hz := float(melody[note_idx])
+			var bell_env := exp(-note_t * 7.5)
+			sample += sin(TAU * hz * t) * bell_env * 0.065
+			sample += sin(TAU * hz * 2.0 * t) * bell_env * 0.020
+			if int(t / 2.0) % 2 == 0:
+				var sparkle_t := fmod(t + 0.125, 0.50)
+				sample += sin(TAU * hz * 1.5 * t) * exp(-sparkle_t * 9.0) * 0.018
+		else:
+			var step := 1.0
+			var note_t := fmod(t, step)
+			var note_idx := int(t / step) % melody.size()
+			var hz := float(melody[note_idx])
+			var soft_env := exp(-note_t * 3.6)
+			sample += sin(TAU * hz * 0.5 * t) * soft_env * 0.050
+			sample += sin(TAU * failed_low_hz * t + sin(TAU * 3.0 * t / dur) * 0.22) * 0.028
+			if note_t < 0.28 and note_idx % 2 == 1:
+				sample += _music_kick(note_t, 0.20)
+			sample += sin(TAU * _loop_hz(997.0, dur) * t) * exp(-note_t * 5.0) * 0.006
+
+		var v := int(sample * 32767.0)
 		b.encode_s16(i * 2, clampi(v, -32768, 32767))
 	return _wav(b, rate, true)
