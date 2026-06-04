@@ -552,7 +552,7 @@ func _finish_cheat(cheat_type: String) -> void:
 		_vis_fill[i] = float(beakers[i].size())
 	_reset_finish_state()
 	_sync_finished_beakers(true)
-	_start_optimal_solver(beakers)
+	emit_signal("goal_changed", optimal_pours)
 	queue_redraw()
 	emit_signal("cheat_applied", cheat_type)
 

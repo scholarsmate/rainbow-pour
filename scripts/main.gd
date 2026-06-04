@@ -505,8 +505,17 @@ func _format_pours(value: float) -> String:
 func _format_volume(value: float) -> String:
 	return "%d%%" % int(round(clampf(value, 0.0, 1.0) * 100.0))
 
+func _has_result_overlay() -> bool:
+	for overlay_name in ["VictoryOverlay", "LoseOverlay"]:
+		var overlay = get_node_or_null(overlay_name)
+		if overlay and not overlay.is_queued_for_deletion():
+			return true
+	return false
+
 func _update_music_pressure() -> void:
 	if not AudioManager:
+		return
+	if _score_forced_zero or _has_result_overlay():
 		return
 	var limit := _get_pour_limit()
 	if limit <= 0:
