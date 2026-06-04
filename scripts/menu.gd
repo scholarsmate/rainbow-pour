@@ -9,6 +9,12 @@ var effects_slider: HSlider
 var effects_value: Label
 
 func _ready():
+	if AudioManager and AudioManager.has_method("play_menu_music"):
+		AudioManager.play_menu_music()
+	elif AudioManager and AudioManager.has_method("play_game_music"):
+		AudioManager.play_game_music(0.0)
+	elif AudioManager and AudioManager.has_method("set_loop_pressure"):
+		AudioManager.set_loop_pressure(0.0)
 	_build_settings_dialog()
 
 func _on_hanoi_pressed():

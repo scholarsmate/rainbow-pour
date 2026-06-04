@@ -3,6 +3,8 @@ extends Node2D
 signal disk_moved
 signal goal_changed(optimal_pours: int)
 signal no_moves_available
+signal cheat_applied(cheat_type: String)
+signal cheat_cancelled
 
 const WALL = 5
 const PLAY_TOP = 145.0
@@ -11,7 +13,8 @@ const OPTIMAL_SOLVER_CALCULATING = -2
 const SOLVER_NODE_LIMIT = 750000
 const SOLVER_STEPS_PER_FRAME = 900
 const FINISHED_BEAKER_PULSE_TIME = 1.25
-const LIQUID_ALPHA = 0.86
+const BOARD_CODE_PREFIX := "RP1"
+const BOARD_CODE_ALPHABET := "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_"
 
 var beaker_capacity:    int   = 4
 var beaker_count:       int   = 8
@@ -49,17 +52,9 @@ var _press_had_selection: bool = false
 var _dragging:        bool  = false
 var _drag_pos:        Vector2 = Vector2.ZERO
 var _drag_hover:      int   = -1
-
-var liquid_colors: Array = [
-	Color(0.95, 0.18, 0.18),
-	Color(1.00, 0.52, 0.04),
-	Color(0.94, 0.82, 0.04),
-	Color(0.06, 0.84, 0.30),
-	Color(0.15, 0.50, 1.00),
-	Color(0.72, 0.18, 0.98),
-	Color(0.07, 0.74, 0.86),
-	Color(1.00, 0.27, 0.58),
-]
+var _cheat_mode:      String = ""
+var _cheat_swap_beaker: int = -1
+var _cheat_swap_segment: int = -1
 
 func _ready():
 	_apply_capacity()
@@ -72,6 +67,9 @@ func _apply_capacity():
 	empty_beakers      = GameSettings.get_empty_beaker_count()
 	filled_beakers     = GameSettings.get_filled_beaker_count()
 	beakers_per_row    = int(ceil(float(beaker_count) / 2.0))
+	_recalculate_beaker_dimensions()
+
+func _recalculate_beaker_dimensions() -> void:
 	# Scale unit height so both rows always fit on screen
 	# Available vertical space leaves room for settings/goal UI above the board.
 	var play_height := PLAY_BOTTOM - PLAY_TOP
@@ -124,6 +122,7 @@ func generate_puzzle():
 	_anim_src_snap.clear()
 	_clear_pointer_state()
 	_clear_undo_state()
+	_cancel_cheat_state()
 	_reset_finish_state()
 	var pool: Array = []
 	for i in filled_beakers:
@@ -253,7 +252,7 @@ func _trigger_finished_beaker_effect(idx: int) -> void:
 	_finish_pulses[idx] = FINISHED_BEAKER_PULSE_TIME
 	var pos: Vector2 = beaker_positions[idx]
 	var color_idx: int = int(beakers[idx][0])
-	var base_color: Color = liquid_colors[color_idx]
+	var base_color: Color = _get_liquid_color(color_idx)
 	for n in 28:
 		var ml := randf_range(0.55, 1.10)
 		var angle := TAU * float(n) / 28.0 + randf_range(-0.12, 0.12)
@@ -290,6 +289,135 @@ func get_possible_destinations(src: int) -> Array:
 func get_board_signature() -> String:
 	return _encode_exact_state(beakers)
 
+func export_board_code() -> String:
+	var encoded_tubes := PackedStringArray()
+	for b in beakers:
+		var encoded := ""
+		for color in b:
+			encoded += _encode_board_digit(int(color))
+		encoded_tubes.append(encoded)
+	return "%s%s%s%s:%s" % [
+		BOARD_CODE_PREFIX,
+		_encode_board_digit(beaker_capacity),
+		_encode_board_digit(filled_beakers),
+		_encode_board_digit(empty_beakers),
+		".".join(encoded_tubes),
+	]
+
+func import_board_code(raw_code: String) -> bool:
+	var code := raw_code.strip_edges()
+	if not code.begins_with(BOARD_CODE_PREFIX):
+		return false
+	var payload := code.substr(BOARD_CODE_PREFIX.length())
+	if payload.length() < 4 or payload.substr(3, 1) != ":":
+		return false
+
+	var imported_capacity := _decode_board_digit(payload.substr(0, 1))
+	var imported_filled := _decode_board_digit(payload.substr(1, 1))
+	var imported_empty := _decode_board_digit(payload.substr(2, 1))
+	if imported_capacity < GameSettings.CAPACITY_MIN or imported_capacity > GameSettings.CAPACITY_MAX:
+		return false
+	if imported_filled <= 0 or imported_empty <= 0:
+		return false
+	var imported_count := imported_filled + imported_empty
+	var tube_parts := payload.substr(4).split(".", true)
+	if tube_parts.size() != imported_count:
+		return false
+
+	var imported_beakers := []
+	for tube_text in tube_parts:
+		if tube_text.length() > imported_capacity:
+			return false
+		var tube := []
+		for i in tube_text.length():
+			var color_idx := _decode_board_digit(tube_text.substr(i, 1))
+			if color_idx < 0 or color_idx >= imported_filled:
+				return false
+			tube.append(color_idx)
+		imported_beakers.append(tube)
+
+	var difficulty_key := GameSettings.find_difficulty_for_counts(imported_filled, imported_empty)
+	if difficulty_key != "":
+		GameSettings.set_difficulty(difficulty_key)
+	GameSettings.set_beaker_capacity(imported_capacity)
+
+	beaker_capacity = imported_capacity
+	filled_beakers = imported_filled
+	empty_beakers = imported_empty
+	beaker_count = imported_count
+	beakers_per_row = int(ceil(float(beaker_count) / 2.0))
+	_recalculate_beaker_dimensions()
+	beakers = imported_beakers
+	_vis_fill.resize(beaker_count)
+	for i in beaker_count:
+		_vis_fill[i] = float(beakers[i].size())
+	selected_beaker = -1
+	_is_animating = false
+	_anim_src = -1
+	_anim_src_snap.clear()
+	_particles.clear()
+	_clear_pointer_state()
+	_clear_undo_state()
+	_cancel_cheat_state()
+	_reset_finish_state()
+	setup_beaker_positions()
+	_sync_finished_beakers(false)
+	_starting_beakers = _copy_state(beakers)
+	_start_optimal_solver(beakers)
+	queue_redraw()
+	return true
+
+func has_usable_stir_cheat() -> bool:
+	if _is_animating or check_complete():
+		return false
+	for idx in beaker_count:
+		if _can_stir_beaker(idx):
+			return true
+	return false
+
+func has_usable_swap_cheat() -> bool:
+	if _is_animating or check_complete():
+		return false
+	for idx in beaker_count:
+		var b: Array = beakers[idx]
+		for segment in maxi(0, b.size() - 1):
+			if b[segment] != b[segment + 1]:
+				return true
+	return false
+
+func begin_stir_cheat() -> bool:
+	if not has_usable_stir_cheat():
+		return false
+	_cheat_mode = "stir"
+	_cheat_swap_beaker = -1
+	_cheat_swap_segment = -1
+	selected_beaker = -1
+	_clear_pointer_state()
+	queue_redraw()
+	return true
+
+func begin_swap_cheat() -> bool:
+	if not has_usable_swap_cheat():
+		return false
+	_cheat_mode = "swap"
+	_cheat_swap_beaker = -1
+	_cheat_swap_segment = -1
+	selected_beaker = -1
+	_clear_pointer_state()
+	queue_redraw()
+	return true
+
+func is_choosing_cheat() -> bool:
+	return _cheat_mode != ""
+
+func cancel_cheat(emit_event: bool = true) -> void:
+	if _cheat_mode == "":
+		return
+	_cancel_cheat_state()
+	queue_redraw()
+	if emit_event:
+		emit_signal("cheat_cancelled")
+
 func can_undo_last_pour() -> bool:
 	return not _is_animating and not _undo_beakers.is_empty()
 
@@ -305,6 +433,7 @@ func undo_last_pour() -> bool:
 	_particles.clear()
 	_clear_pointer_state()
 	_clear_undo_state()
+	_cancel_cheat_state()
 	_reset_finish_state()
 	_sync_finished_beakers(false)
 	queue_redraw()
@@ -324,9 +453,10 @@ func retry_current_puzzle() -> bool:
 	_particles.clear()
 	_clear_pointer_state()
 	_clear_undo_state()
+	_cancel_cheat_state()
 	_reset_finish_state()
 	_sync_finished_beakers(false)
-	emit_signal("goal_changed", optimal_pours)
+	_start_optimal_solver(_starting_beakers)
 	queue_redraw()
 	return true
 
@@ -338,6 +468,7 @@ func reset():
 	_particles.clear()
 	_clear_pointer_state()
 	_clear_undo_state()
+	_cancel_cheat_state()
 	_reset_finish_state()
 	_apply_capacity()
 	setup_beaker_positions()
@@ -350,6 +481,80 @@ func _store_undo_state():
 func _clear_undo_state():
 	_undo_beakers.clear()
 	_undo_vis_fill.clear()
+
+func _cancel_cheat_state() -> void:
+	_cheat_mode = ""
+	_cheat_swap_beaker = -1
+	_cheat_swap_segment = -1
+
+func _can_stir_beaker(idx: int) -> bool:
+	if idx < 0 or idx >= beaker_count:
+		return false
+	var b: Array = beakers[idx]
+	if b.size() < 2:
+		return false
+	var first = b[0]
+	for color in b:
+		if color != first:
+			return true
+	return false
+
+func _stir_beaker(idx: int) -> bool:
+	if not _can_stir_beaker(idx):
+		return false
+	_store_undo_state()
+	var before: Array = beakers[idx].duplicate()
+	var stirred: Array = before.duplicate()
+	for attempt in 12:
+		stirred.shuffle()
+		if _tube_key(stirred) != _tube_key(before):
+			break
+	if _tube_key(stirred) == _tube_key(before):
+		stirred.reverse()
+	beakers[idx] = stirred
+	_finish_cheat("stir")
+	return true
+
+func _can_swap_segments(idx: int, first_segment: int, second_segment: int) -> bool:
+	if idx < 0 or idx >= beaker_count:
+		return false
+	var b: Array = beakers[idx]
+	if first_segment < 0 or second_segment < 0:
+		return false
+	if first_segment >= b.size() or second_segment >= b.size():
+		return false
+	if abs(first_segment - second_segment) != 1:
+		return false
+	return b[first_segment] != b[second_segment]
+
+func _swap_segments(idx: int, first_segment: int, second_segment: int) -> bool:
+	if not _can_swap_segments(idx, first_segment, second_segment):
+		return false
+	_store_undo_state()
+	var b: Array = beakers[idx]
+	var tmp = b[first_segment]
+	b[first_segment] = b[second_segment]
+	b[second_segment] = tmp
+	_finish_cheat("swap")
+	return true
+
+func _finish_cheat(cheat_type: String) -> void:
+	_cancel_cheat_state()
+	selected_beaker = -1
+	_is_animating = false
+	_anim_src = -1
+	_anim_src_snap.clear()
+	_particles.clear()
+	_clear_pointer_state()
+	_clear_undo_state()
+	_vis_fill.resize(beaker_count)
+	for i in beaker_count:
+		_vis_fill[i] = float(beakers[i].size())
+	_reset_finish_state()
+	_sync_finished_beakers(true)
+	_start_optimal_solver(beakers)
+	queue_redraw()
+	emit_signal("cheat_applied", cheat_type)
 
 # ---------------------------------------------------------------------------
 # Solver
@@ -514,8 +719,26 @@ func _encode_exact_state(state: Array) -> String:
 		tubes.append(",".join(colors))
 	return "|".join(tubes)
 
+func _encode_board_digit(value: int) -> String:
+	if value < 0 or value >= BOARD_CODE_ALPHABET.length():
+		return "?"
+	return BOARD_CODE_ALPHABET.substr(value, 1)
+
+func _decode_board_digit(ch: String) -> int:
+	if ch.length() != 1:
+		return -1
+	return BOARD_CODE_ALPHABET.find(ch)
+
 func _input(event: InputEvent):
 	if _is_animating:
+		return
+	if _cheat_mode != "":
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			_handle_cheat_input(event.position)
+			get_viewport().set_input_as_handled()
+		elif event is InputEventScreenTouch and event.pressed:
+			_handle_cheat_input(event.position)
+			get_viewport().set_input_as_handled()
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
@@ -591,6 +814,43 @@ func _clear_pointer_state() -> void:
 	_drag_pos = Vector2.ZERO
 	_drag_hover = -1
 
+func _handle_cheat_input(pos: Vector2) -> void:
+	if _cheat_mode == "stir":
+		var idx := _beaker_at(pos)
+		if _stir_beaker(idx):
+			return
+		if AudioManager:
+			AudioManager.play_invalid()
+		return
+
+	if _cheat_mode != "swap":
+		return
+
+	var hit := _segment_at(pos)
+	var idx := int(hit["beaker"])
+	var segment := int(hit["segment"])
+	if idx < 0 or segment < 0:
+		if AudioManager:
+			AudioManager.play_invalid()
+		return
+
+	if _cheat_swap_beaker < 0:
+		_cheat_swap_beaker = idx
+		_cheat_swap_segment = segment
+		if AudioManager:
+			AudioManager.play_select()
+		queue_redraw()
+		return
+
+	if idx == _cheat_swap_beaker and _swap_segments(idx, _cheat_swap_segment, segment):
+		return
+
+	if AudioManager:
+		AudioManager.play_invalid()
+	_cheat_swap_beaker = idx
+	_cheat_swap_segment = segment
+	queue_redraw()
+
 func _beaker_at(pos: Vector2) -> int:
 	for i in beaker_count:
 		var bp: Vector2 = beaker_positions[i]
@@ -599,6 +859,16 @@ func _beaker_at(pos: Vector2) -> int:
 				and pos.y <= bp.y + 12):
 			return i
 	return -1
+
+func _segment_at(pos: Vector2) -> Dictionary:
+	var idx := _beaker_at(pos)
+	if idx < 0:
+		return {"beaker": -1, "segment": -1}
+	var bp: Vector2 = beaker_positions[idx]
+	var segment := int(floor((bp.y - pos.y) / float(liquid_unit_height)))
+	if segment < 0 or segment >= beakers[idx].size():
+		return {"beaker": -1, "segment": -1}
+	return {"beaker": idx, "segment": segment}
 
 func _handle_click(idx: int):
 	if selected_beaker < 0:
@@ -651,13 +921,16 @@ func _draw_drag_path():
 		return
 	var source: Vector2 = beaker_positions[selected_beaker] + Vector2(0, -float(beaker_height) - 16.0)
 	var legal_hover: bool = _drag_hover >= 0 and can_pour(selected_beaker, _drag_hover)
-	var color: Color = Color(0.28, 1.0, 0.62, 0.58) if legal_hover else Color(1.0, 0.86, 0.18, 0.48)
+	var pour_color := _get_selected_pour_color()
+	var color: Color = Color(pour_color.r, pour_color.g, pour_color.b, 0.74) if legal_hover else Color(1.0, 0.86, 0.18, 0.48)
 	draw_line(source, _drag_pos, color, 4.0, true)
-	draw_circle(_drag_pos, 9.0, color)
+	draw_circle(_drag_pos, 10.0, color)
+	if legal_hover:
+		draw_circle(_drag_pos, 5.0, Color(1.0, 1.0, 1.0, 0.54))
 
 func _draw_cylinder_rect(x: float, y: float, w: float, h: float, col: Color):
 	# Simulate a cylindrical surface: dark edges, bright centre
-	var liquid_col := Color(col.r, col.g, col.b, LIQUID_ALPHA)
+	var liquid_col := Color(col.r, col.g, col.b, _get_liquid_alpha())
 	var cx    := x + w * 0.5
 	var dim   := liquid_col.darkened(0.42)
 	var mid   := liquid_col.lightened(0.18)
@@ -681,6 +954,76 @@ func _draw_cylinder_rect(x: float, y: float, w: float, h: float, col: Color):
 		])
 	)
 
+func _draw_liquid_texture(x: float, y: float, w: float, h: float, color_idx: int, segment_idx: int) -> void:
+	if h < 10.0:
+		return
+	var phase := _time * 3.2 + float(color_idx) * 1.17 + float(segment_idx) * 0.71
+	var alpha := 0.075 + 0.035 * maxf(0.0, sin(phase))
+	var light := Color(1.0, 1.0, 1.0, alpha)
+	var dark := Color(0.0, 0.0, 0.0, alpha * 0.58)
+	match color_idx % 5:
+		0:
+			var step := 10
+			var offset := int(fmod(_time * 8.0 + float(color_idx) * 3.0, float(step)))
+			for yy in range(int(y) + offset, int(y + h), step):
+				draw_line(Vector2(x + 5.0, float(yy)), Vector2(x + w - 5.0, float(yy)), light, 1.0, true)
+		1:
+			for yy in range(int(y + 6.0), int(y + h - 3.0), 13):
+				var row_offset := 6.0 if int(yy / 13) % 2 == 0 else 12.0
+				for xx in range(int(x + row_offset), int(x + w - 5.0), 18):
+					draw_circle(Vector2(float(xx), float(yy)), 2.0, light)
+		2:
+			for yy in range(int(y + 5.0), int(y + h - 2.0), 11):
+				for xx in range(int(x + 2.0), int(x + w - 6.0), 16):
+					draw_line(Vector2(float(xx), float(yy) + 5.0), Vector2(float(xx) + 8.0, float(yy)), light, 1.1, true)
+		3:
+			for xx in range(int(x + 8.0), int(x + w - 4.0), 14):
+				draw_line(Vector2(float(xx), y + 4.0), Vector2(float(xx), y + h - 4.0), dark, 1.0, true)
+		_:
+			for yy in range(int(y + 7.0), int(y + h - 4.0), 12):
+				draw_line(Vector2(x + 7.0, float(yy)), Vector2(x + 18.0, float(yy)), light, 1.0, true)
+				draw_line(Vector2(x + w - 18.0, float(yy) + 4.0), Vector2(x + w - 7.0, float(yy) + 4.0), light, 1.0, true)
+
+func _draw_liquid_symbol(x: float, y: float, w: float, h: float, color_idx: int) -> void:
+	if not GameSettings.show_liquid_symbols or h < 18.0:
+		return
+	var symbols := GameSettings.get_liquid_symbols()
+	if symbols.is_empty():
+		return
+	var font := ThemeDB.fallback_font
+	if font == null:
+		return
+	var symbol := str(symbols[color_idx % symbols.size()])
+	var base := _get_liquid_color(color_idx)
+	var luminance := base.r * 0.299 + base.g * 0.587 + base.b * 0.114
+	var ink := Color(0.02, 0.025, 0.035, 0.52) if luminance > 0.55 else Color(1.0, 1.0, 1.0, 0.58)
+	var font_size := int(clampf(h * 0.46, 12.0, 20.0))
+	draw_string(font, Vector2(x, y + h * 0.5 + float(font_size) * 0.36),
+			symbol, HORIZONTAL_ALIGNMENT_CENTER, w, font_size, ink)
+
+func _get_liquid_alpha() -> float:
+	return clampf(GameSettings.liquid_alpha, GameSettings.LIQUID_ALPHA_MIN, GameSettings.LIQUID_ALPHA_MAX)
+
+func _get_liquid_colors() -> Array:
+	return GameSettings.get_liquid_colors()
+
+func _get_liquid_color(color_idx: int) -> Color:
+	var colors := _get_liquid_colors()
+	if colors.is_empty():
+		return Color.WHITE
+	return colors[color_idx % colors.size()]
+
+func _get_liquid_color_count() -> int:
+	return maxi(1, _get_liquid_colors().size())
+
+func _get_selected_pour_color() -> Color:
+	if selected_beaker < 0 or selected_beaker >= beaker_count:
+		return Color(0.86, 0.90, 0.96)
+	var b: Array = beakers[selected_beaker]
+	if b.is_empty():
+		return Color(0.86, 0.90, 0.96)
+	return _get_liquid_color(int(b.back()))
+
 func _draw_beaker(idx: int):
 	var pos:  Vector2 = beaker_positions[idx]
 	var hw   := float(beaker_width) / 2.0
@@ -692,24 +1035,35 @@ func _draw_beaker(idx: int):
 	if is_finished:
 		_draw_finished_beaker_glow(idx, pos, hw, bh)
 
+	if _cheat_mode != "":
+		_draw_cheat_highlight(idx, pos, hw, bh)
+
 	if is_target:
 		var target_pulse := 0.24 + 0.10 * sin(_time * 7.5 + float(idx))
-		var outline := Color(0.32, 1.0, 0.64, 0.92)
-		var fill := Color(0.20, 0.95, 0.56, target_pulse)
+		var pour_color := _get_selected_pour_color()
+		var outline := Color(pour_color.r, pour_color.g, pour_color.b, 0.96).lightened(0.18)
+		var fill := Color(pour_color.r, pour_color.g, pour_color.b, target_pulse * 0.62)
+		var shimmer := Color(1.0, 1.0, 1.0, 0.28 + target_pulse * 0.42)
 		if idx == _drag_hover:
-			outline = Color(0.72, 1.0, 0.42, 1.0)
-			fill = Color(0.48, 1.0, 0.32, target_pulse + 0.10)
+			outline = Color(pour_color.r, pour_color.g, pour_color.b, 1.0).lightened(0.30)
+			fill = Color(pour_color.r, pour_color.g, pour_color.b, target_pulse * 0.78 + 0.08)
+			shimmer = Color(1.0, 1.0, 1.0, 0.46 + target_pulse * 0.46)
 		var rect := Rect2(pos.x - hw - 12, pos.y - bh - 12,
 				float(beaker_width) + 24.0, bh + 24.0)
 		draw_rect(rect, fill, true)
 		draw_rect(rect, outline, false, 3.0)
+		draw_rect(rect.grow(-3.0), shimmer, false, 1.3)
 
 	# --- Pulsing selection glow ---
 	if isel:
 		var pulse := 0.18 + 0.10 * sin(_time * 7.0)
+		var pour_color := _get_selected_pour_color()
 		draw_rect(Rect2(pos.x - hw - 10, pos.y - bh - 10,
 				float(beaker_width) + 20.0, bh + 20.0),
-				Color(1.0, 0.95, 0.15, pulse), true)
+				Color(pour_color.r, pour_color.g, pour_color.b, pulse), true)
+		draw_rect(Rect2(pos.x - hw - 10, pos.y - bh - 10,
+				float(beaker_width) + 20.0, bh + 20.0),
+				Color(pour_color.r, pour_color.g, pour_color.b, 0.58).lightened(0.16), false, 2.0)
 
 	# --- Glass interior background (dark tint inside tube) ---
 	var inner_x := pos.x - hw + WALL
@@ -728,14 +1082,17 @@ func _draw_beaker(idx: int):
 		var f1 := minf(float(ui + 1), vis)
 		if f1 <= f0:
 			break
-		var col: Color = liquid_colors[color_data[ui]]
+		var col: Color = _get_liquid_color(int(color_data[ui]))
 		var h   := (f1 - f0) * float(liquid_unit_height)
 		var ly  := pos.y - f1 * float(liquid_unit_height)
 		_draw_cylinder_rect(inner_x, ly, inner_w, h, col)
+		_draw_liquid_texture(inner_x, ly, inner_w, h, int(color_data[ui]), ui)
+		_draw_liquid_symbol(inner_x, ly, inner_w, h, int(color_data[ui]))
 		# Shimmer line at top of each full segment
 		if f1 >= float(ui + 1) - 0.01:
+			var shimmer := 0.16 + 0.14 * maxf(0.0, sin(_time * 2.8 + float(color_data[ui]) * 1.7 + float(idx) * 0.43))
 			draw_rect(Rect2(inner_x + 2, ly, inner_w - 4, 3),
-					Color(1.0, 1.0, 1.0, 0.22), true)
+					Color(1.0, 1.0, 1.0, shimmer), true)
 
 	# --- Glass tube walls ---
 	# Main wall body with a subtle inner gradient (left bright, right slightly dim)
@@ -779,9 +1136,39 @@ func _draw_beaker(idx: int):
 	if is_finished:
 		_draw_finished_beaker_lid(idx, pos, hw, bh)
 
+func _draw_cheat_highlight(idx: int, pos: Vector2, hw: float, bh: float) -> void:
+	var rect := Rect2(pos.x - hw - 10.0, pos.y - bh - 10.0,
+			float(beaker_width) + 20.0, bh + 20.0)
+	if _cheat_mode == "stir" and _can_stir_beaker(idx):
+		var pulse := 0.18 + 0.08 * sin(_time * 7.0 + float(idx))
+		draw_rect(rect, Color(0.30, 0.86, 1.0, pulse), true)
+		draw_rect(rect, Color(0.56, 0.94, 1.0, 0.82), false, 2.5)
+	elif _cheat_mode == "swap":
+		var has_pair := false
+		var b: Array = beakers[idx]
+		for segment in maxi(0, b.size() - 1):
+			if b[segment] != b[segment + 1]:
+				has_pair = true
+				break
+		if has_pair:
+			draw_rect(rect, Color(1.0, 0.82, 0.18, 0.11), true)
+			draw_rect(rect, Color(1.0, 0.86, 0.24, 0.70), false, 2.0)
+		if idx == _cheat_swap_beaker and _cheat_swap_segment >= 0:
+			var segment_rect := _segment_rect(idx, _cheat_swap_segment)
+			draw_rect(segment_rect.grow(3.0), Color(1.0, 1.0, 1.0, 0.16), true)
+			draw_rect(segment_rect.grow(3.0), Color(1.0, 1.0, 1.0, 0.92), false, 2.0)
+
+func _segment_rect(idx: int, segment: int) -> Rect2:
+	var pos: Vector2 = beaker_positions[idx]
+	var hw := float(beaker_width) / 2.0
+	var inner_x := pos.x - hw + WALL
+	var inner_w := float(beaker_width) - WALL * 2.0
+	var top := pos.y - float(segment + 1) * float(liquid_unit_height)
+	return Rect2(inner_x, top, inner_w, float(liquid_unit_height))
+
 func _draw_finished_beaker_glow(idx: int, pos: Vector2, hw: float, bh: float) -> void:
 	var color_idx: int = int(beakers[idx][0])
-	var base: Color = liquid_colors[color_idx].lightened(0.28)
+	var base: Color = _get_liquid_color(color_idx).lightened(0.28)
 	var pulse := _get_finish_pulse(idx)
 	var idle := 0.14 + 0.05 * sin(_time * 3.4 + float(idx) * 0.7)
 	var rect := Rect2(pos.x - hw - 15.0, pos.y - bh - 15.0, float(beaker_width) + 30.0, bh + 30.0)
@@ -805,7 +1192,7 @@ func _draw_finished_beaker_lid(idx: int, pos: Vector2, hw: float, bh: float) -> 
 	var pulse := _get_finish_pulse(idx)
 	var top := pos.y - bh
 	var color_idx: int = int(beakers[idx][0])
-	var liquid: Color = liquid_colors[color_idx]
+	var liquid: Color = _get_liquid_color(color_idx)
 	var bob := sin(_time * 3.0 + float(idx)) * 1.2
 	var lid_center := Vector2(pos.x, top - 5.0 + bob)
 	var lid_rx := hw + 10.0 + pulse * 4.0
@@ -854,7 +1241,7 @@ func _celebrate():
 		_particles.append({
 			"pos":      bp + Vector2(randf_range(-35, 35), randf_range(-float(beaker_height) * 0.9, -5.0)),
 			"vel":      Vector2(randf_range(-240, 240), randf_range(-450, -60)),
-			"color":    liquid_colors[randi() % liquid_colors.size()],
+			"color":    _get_liquid_color(randi() % _get_liquid_color_count()),
 			"radius":   randf_range(4.0, 13.0),
 			"life":     ml,
 			"max_life": ml,
