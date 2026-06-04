@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://beaker_scene_001"]
+[gd_scene load_steps=4 format=3 uid="uid://beaker_scene_001"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/towers.gd" id="2_towers"]
+[ext_resource type="Script" path="res://scripts/background.gd" id="3_background"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
@@ -13,6 +14,7 @@ offset_right = 1280.0
 offset_bottom = 720.0
 color = Color(0.12, 0.14, 0.17, 1)
 mouse_filter = 2
+script = ExtResource("3_background")
 
 [node name="Towers" type="Node2D" parent="."]
 script = ExtResource("2_towers")
@@ -26,6 +28,27 @@ offset_top = 46.0
 offset_bottom = 76.0
 theme_override_font_sizes/font_size = 22
 text = "Pours: 0"
+horizontal_alignment = 1
+
+[node name="GoalLabel" type="Label" parent="UI"]
+visible = false
+anchor_left = 0.0
+anchor_right = 1.0
+offset_top = 74.0
+offset_bottom = 100.0
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 0.86, 0.35, 1)
+text = "Goal: 0 pours"
+horizontal_alignment = 1
+
+[node name="PossibleMovesLabel" type="Label" parent="UI"]
+anchor_left = 0.0
+anchor_right = 1.0
+offset_top = 102.0
+offset_bottom = 128.0
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.58, 0.94, 1, 1)
+text = "Possible moves: 0"
 horizontal_alignment = 1
 
 [node name="Title" type="Label" parent="UI"]
@@ -58,17 +81,50 @@ text = "Click a beaker to select it, then click another to pour.\nYou can only p
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ResetButton" type="Button" parent="UI"]
+[node name="SettingsButton" type="Button" parent="UI"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 150.0
+offset_bottom = 60.0
+theme_override_font_sizes/font_size = 20
+text = "Settings"
+
+[node name="NewPuzzleButton" type="Button" parent="UI"]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -230.0
+offset_left = -500.0
+offset_top = 20.0
+offset_right = -360.0
+offset_bottom = 60.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 20
+text = "New Puzzle"
+
+[node name="RetryButton" type="Button" parent="UI"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -350.0
+offset_top = 20.0
+offset_right = -250.0
+offset_bottom = 60.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 20
+text = "Retry"
+
+[node name="MulliganButton" type="Button" parent="UI"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -240.0
 offset_top = 20.0
 offset_right = -120.0
 offset_bottom = 60.0
 grow_horizontal = 0
-theme_override_font_sizes/font_size = 20
-text = "Reset"
+disabled = true
+theme_override_font_sizes/font_size = 18
+text = "Undo +0.5"
 
 [node name="MenuButton" type="Button" parent="UI"]
 anchors_preset = 1
@@ -82,5 +138,7 @@ grow_horizontal = 0
 theme_override_font_sizes/font_size = 20
 text = "Menu"
 
-[connection signal="pressed" from="UI/ResetButton" to="." method="reset_game"]
+[connection signal="pressed" from="UI/NewPuzzleButton" to="." method="reset_game"]
+[connection signal="pressed" from="UI/RetryButton" to="." method="retry_game"]
+[connection signal="pressed" from="UI/MulliganButton" to="." method="use_mulligan"]
 [connection signal="pressed" from="UI/MenuButton" to="." method="go_to_menu"]

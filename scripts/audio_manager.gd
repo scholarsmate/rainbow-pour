@@ -1,38 +1,178 @@
 extends Node
 
+const MUSIC_BUS := "Music"
+const EFFECTS_BUS := "Effects"
+
+var _click: AudioStreamPlayer
 var _select: AudioStreamPlayer
 var _pour: AudioStreamPlayer
+var _pour_stream_player: AudioStreamPlayer
+var _pour_splash_player: AudioStreamPlayer
 var _move: AudioStreamPlayer
 var _invalid: AudioStreamPlayer
 var _win: AudioStreamPlayer
+var _loss: AudioStreamPlayer
+var _music: AudioStreamPlayer
+var _star_boom_players: Array[AudioStreamPlayer] = []
+var _star_boom_next := 0
+var _pour_streams: Array[AudioStream] = []
+var _pour_splashes: Array[AudioStream] = []
+var _pour_stop_tween: Tween
 
 func _ready():
-	_select  = _add(_gen_tone(880.0, 0.07, 32.0, 0.50))
-	_pour    = _add(_gen_pour())
-	_move    = _add(_gen_tone(440.0, 0.06, 28.0, 0.45))
-	_invalid = _add(_gen_tone(175.0, 0.14, 16.0, 0.65))
-	_win     = _add(_gen_win())
+	var headless := DisplayServer.get_name() == "headless"
+	_ensure_audio_bus(MUSIC_BUS)
+	_ensure_audio_bus(EFFECTS_BUS)
+	get_tree().root.tree_exiting.connect(_stop_all)
+	if not headless:
+		_load_pour_assets()
+	_click   = _add(null if headless else _gen_tone(720.0, 0.045, 48.0, 0.36), -4.0, EFFECTS_BUS)
+	_select  = _add(null if headless else _gen_tone(880.0, 0.07, 32.0, 0.50), -3.0, EFFECTS_BUS)
+	_pour    = _add(null if headless else _gen_pour(), -7.0, EFFECTS_BUS)
+	_pour_stream_player = _add(null, -2.0, EFFECTS_BUS)
+	_pour_splash_player = _add(null, -5.5, EFFECTS_BUS)
+	_move    = _add(null if headless else _gen_tone(440.0, 0.06, 28.0, 0.45), -4.0, EFFECTS_BUS)
+	_invalid = _add(null if headless else _gen_tone(175.0, 0.14, 16.0, 0.65), -2.0, EFFECTS_BUS)
+	_win     = _add(null if headless else _gen_win(), -1.0, EFFECTS_BUS)
+	_loss    = _add(null if headless else _gen_glass_shatter(), -2.0, EFFECTS_BUS)
+	var star_boom_stream: AudioStream = null if headless else _gen_star_boom()
+	for i in 5:
+		_star_boom_players.append(_add(star_boom_stream, -0.8, EFFECTS_BUS))
+	if not headless:
+		_music = _add(_gen_music_loop(), -22.0, MUSIC_BUS)
+	apply_volume_settings()
+	if _music:
+		_music.play()
 
+func _exit_tree():
+	_stop_all()
+
+func _stop_all():
+	if _pour_stop_tween and _pour_stop_tween.is_valid():
+		_pour_stop_tween.kill()
+	for child in get_children():
+		if child is AudioStreamPlayer:
+			child.stop()
+			child.stream = null
+
+func play_click():   _click.play()
 func play_select():  _select.play()
 func play_pour():
-	if _pour.playing: _pour.stop()
+	if not _pour_streams.is_empty():
+		_play_sampled_pour()
+		return
+	if _pour.playing:
+		_pour.stop()
 	_pour.play()
 func play_move():    _move.play()
 func play_invalid(): _invalid.play()
 func play_win():     _win.play()
+func play_loss():    _loss.play()
+func play_star_boom(star_index: int = 0):
+	if _star_boom_players.is_empty():
+		return
+	var player := _star_boom_players[_star_boom_next]
+	_star_boom_next = (_star_boom_next + 1) % _star_boom_players.size()
+	player.stop()
+	player.volume_db = -1.2 + minf(float(star_index), 4.0) * 0.28
+	player.pitch_scale = 0.90 + minf(float(star_index), 4.0) * 0.045 + randf_range(-0.018, 0.018)
+	player.play()
 
-func _add(stream: AudioStreamWAV) -> AudioStreamPlayer:
+func apply_volume_settings() -> void:
+	set_music_volume(GameSettings.music_volume)
+	set_effects_volume(GameSettings.effects_volume)
+
+func set_music_volume(value: float) -> void:
+	_set_bus_volume(MUSIC_BUS, value)
+
+func set_effects_volume(value: float) -> void:
+	_set_bus_volume(EFFECTS_BUS, value)
+
+func _add(stream: AudioStream = null, volume_db: float = 0.0, bus_name: String = EFFECTS_BUS) -> AudioStreamPlayer:
 	var p = AudioStreamPlayer.new()
 	p.stream = stream
+	p.volume_db = volume_db
+	p.bus = bus_name
 	add_child(p)
 	return p
 
-func _wav(b: PackedByteArray, rate: int = 22050) -> AudioStreamWAV:
+func _ensure_audio_bus(bus_name: String) -> int:
+	var idx := AudioServer.get_bus_index(bus_name)
+	if idx >= 0:
+		return idx
+	AudioServer.add_bus()
+	idx = AudioServer.get_bus_count() - 1
+	AudioServer.set_bus_name(idx, bus_name)
+	AudioServer.set_bus_send(idx, "Master")
+	return idx
+
+func _set_bus_volume(bus_name: String, value: float) -> void:
+	var idx := _ensure_audio_bus(bus_name)
+	var clamped := clampf(value, 0.0, 1.0)
+	AudioServer.set_bus_mute(idx, clamped <= 0.001)
+	AudioServer.set_bus_volume_db(idx, -80.0 if clamped <= 0.001 else linear_to_db(clamped))
+
+func _load_pour_assets() -> void:
+	_pour_streams = _load_audio_streams([
+		"res://assets/audio/water/pour_stream_01.ogg",
+		"res://assets/audio/water/pour_stream_02.ogg",
+		"res://assets/audio/water/pour_stream_03.ogg",
+	])
+	_pour_splashes = _load_audio_streams([
+		"res://assets/audio/water/pour_splash_01.ogg",
+		"res://assets/audio/water/pour_splash_02.ogg",
+		"res://assets/audio/water/pour_splash_03.ogg",
+	])
+
+func _load_audio_streams(paths: Array) -> Array[AudioStream]:
+	var streams: Array[AudioStream] = []
+	for path in paths:
+		var stream = load(path)
+		if stream is AudioStream:
+			streams.append(stream)
+	return streams
+
+func _play_sampled_pour() -> void:
+	if _pour_stop_tween and _pour_stop_tween.is_valid():
+		_pour_stop_tween.kill()
+
+	var stream: AudioStream = _pour_streams.pick_random()
+	_pour_stream_player.stop()
+	_pour_stream_player.stream = stream
+	_pour_stream_player.volume_db = randf_range(-2.4, -1.2)
+	_pour_stream_player.pitch_scale = randf_range(0.96, 1.05)
+
+	var from_position := 0.0
+	var length := stream.get_length()
+	if length > 1.0:
+		from_position = randf_range(0.05, length - 0.85)
+	_pour_stream_player.play(from_position)
+
+	if not _pour_splashes.is_empty():
+		_pour_splash_player.stop()
+		_pour_splash_player.stream = _pour_splashes.pick_random()
+		_pour_splash_player.volume_db = randf_range(-7.0, -4.6)
+		_pour_splash_player.pitch_scale = randf_range(0.92, 1.08)
+		_pour_splash_player.play()
+
+	_pour_stop_tween = create_tween()
+	_pour_stop_tween.tween_interval(0.52)
+	_pour_stop_tween.tween_property(_pour_stream_player, "volume_db", -22.0, 0.24)
+	_pour_stop_tween.tween_callback(func():
+		_pour_stream_player.stop()
+		_pour_stream_player.volume_db = -2.0
+	)
+
+func _wav(b: PackedByteArray, rate: int = 22050, loop: bool = false) -> AudioStreamWAV:
 	var s = AudioStreamWAV.new()
 	s.format = AudioStreamWAV.FORMAT_16_BITS
 	s.mix_rate = rate
 	s.stereo = false
 	s.data = b
+	if loop:
+		s.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		s.loop_begin = 0
+		s.loop_end = int(b.size() / 2)
 	return s
 
 func _gen_tone(hz: float, dur: float, decay: float, amp: float) -> AudioStreamWAV:
@@ -46,15 +186,47 @@ func _gen_tone(hz: float, dur: float, decay: float, amp: float) -> AudioStreamWA
 	return _wav(b)
 
 func _gen_pour() -> AudioStreamWAV:
-	var rate := 22050; var dur := 0.42
+	var rate := 22050
+	var dur := 0.72
 	var n := int(rate * dur)
 	var b := PackedByteArray(); b.resize(n * 2)
+	var stream := 0.0
+	var droplets := [
+		[0.06, 760.0, 0.10],
+		[0.14, 520.0, 0.08],
+		[0.26, 690.0, 0.09],
+		[0.41, 430.0, 0.07],
+		[0.56, 610.0, 0.06],
+	]
 	for i in n:
 		var t := float(i) / rate
-		var env := sin(PI * t / dur)
-		var freq := 360.0 + sin(t * 22.0) * 90.0 + sin(t * 13.7) * 40.0
-		var v := int((sin(TAU * freq * t) * 0.55 + randf_range(-1.0, 1.0) * 0.38)
-					  * env * 0.36 * 32767.0)
+		var attack := minf(1.0, t / 0.09)
+		var release := minf(1.0, (dur - t) / 0.20)
+		var env := attack * release
+		var white := randf_range(-1.0, 1.0)
+		stream = lerpf(stream, white, 0.16)
+		var hiss := white - stream
+		var gurgle := sin(TAU * (92.0 + sin(t * 15.0) * 18.0) * t) * 0.045
+		var sample := (stream * 0.34 + hiss * 0.065 + gurgle) * env
+
+		if t > 0.34:
+			var tail_t := t - 0.34
+			sample += randf_range(-1.0, 1.0) * exp(-tail_t * 5.0) * 0.055
+			sample += sin(TAU * 145.0 * tail_t) * exp(-tail_t * 8.0) * 0.035
+
+		for droplet in droplets:
+			var start := float(droplet[0])
+			if t < start:
+				continue
+			var local_t := t - start
+			if local_t > 0.10:
+				continue
+			var hz := float(droplet[1])
+			var amp := float(droplet[2])
+			sample += sin(TAU * hz * local_t) * exp(-local_t * 38.0) * amp
+			sample += randf_range(-1.0, 1.0) * exp(-local_t * 70.0) * amp * 0.32
+
+		var v := int(sample * 32767.0)
 		b.encode_s16(i * 2, clampi(v, -32768, 32767))
 	return _wav(b)
 
@@ -74,3 +246,118 @@ func _gen_win() -> AudioStreamWAV:
 			if si < n:
 				b.encode_s16(si * 2, clampi(b.decode_s16(si * 2) + v, -32768, 32767))
 	return _wav(b)
+
+func _gen_glass_shatter() -> AudioStreamWAV:
+	var rate := 22050
+	var dur := 0.85
+	var n := int(rate * dur)
+	var b := PackedByteArray(); b.resize(n * 2)
+	var shards := [
+		[0.00, 3180.0, 0.34],
+		[0.03, 4860.0, 0.28],
+		[0.07, 2550.0, 0.24],
+		[0.13, 6120.0, 0.18],
+		[0.21, 3820.0, 0.16],
+	]
+	for i in n:
+		var t := float(i) / rate
+		var noise := randf_range(-1.0, 1.0) * exp(-t * 5.8) * 0.13
+		var sample := noise
+		for shard in shards:
+			var start := float(shard[0])
+			if t < start:
+				continue
+			var local_t := t - start
+			var hz := float(shard[1])
+			var amp := float(shard[2])
+			sample += sin(TAU * hz * local_t) * exp(-local_t * 24.0) * amp
+			sample += randf_range(-1.0, 1.0) * exp(-local_t * 32.0) * amp * 0.35
+		var debris := randf_range(-1.0, 1.0) * exp(-t * 2.6) * 0.045
+		var v := int((sample + debris) * 32767.0)
+		b.encode_s16(i * 2, clampi(v, -32768, 32767))
+	return _wav(b)
+
+func _gen_star_boom() -> AudioStreamWAV:
+	var rate := 22050
+	var dur := 0.74
+	var n := int(rate * dur)
+	var b := PackedByteArray(); b.resize(n * 2)
+	var rumble := 0.0
+	for i in n:
+		var t := float(i) / rate
+		var attack := minf(1.0, t / 0.018)
+		var tail := exp(-t * 4.1)
+		var low_drop := 82.0 - 44.0 * minf(1.0, t / 0.34)
+		var sub := sin(TAU * low_drop * t) * attack * tail * 0.58
+		var punch := sin(TAU * 118.0 * t) * exp(-t * 12.0) * 0.34
+		var crack := randf_range(-1.0, 1.0) * exp(-t * 32.0) * 0.25
+		rumble = lerpf(rumble, randf_range(-1.0, 1.0), 0.045)
+		var rolling := rumble * exp(-t * 2.2) * 0.19
+		var sparkle := 0.0
+		for raw_offset in [0.045, 0.072, 0.116]:
+			var offset := float(raw_offset)
+			if t < offset:
+				continue
+			var local_t: float = t - offset
+			sparkle += sin(TAU * (720.0 + offset * 3200.0) * local_t) * exp(-local_t * 26.0) * 0.055
+		var sample := sub + punch + crack + rolling + sparkle
+		var v := int(sample * 32767.0)
+		b.encode_s16(i * 2, clampi(v, -32768, 32767))
+	return _wav(b)
+
+func _gen_music_loop() -> AudioStreamWAV:
+	var rate := 22050
+	var dur := 64.0
+	var n := int(rate * dur)
+	var b := PackedByteArray(); b.resize(n * 2)
+	var chords := [
+		[261.63, 329.63, 392.00],
+		[293.66, 349.23, 440.00],
+		[329.63, 392.00, 493.88],
+		[246.94, 329.63, 392.00],
+		[261.63, 349.23, 440.00],
+		[293.66, 369.99, 440.00],
+		[329.63, 415.30, 493.88],
+		[246.94, 329.63, 440.00],
+		[261.63, 392.00, 523.25],
+		[293.66, 349.23, 523.25],
+		[329.63, 392.00, 587.33],
+		[246.94, 369.99, 493.88],
+		[261.63, 329.63, 440.00],
+		[293.66, 392.00, 493.88],
+		[329.63, 440.00, 659.25],
+		[246.94, 329.63, 392.00],
+	]
+	var ripples := [
+		659.25, 783.99, 880.00, 987.77,
+		783.99, 659.25, 587.33, 523.25,
+		698.46, 880.00, 987.77, 1046.50,
+		880.00, 783.99, 659.25, 587.33,
+		783.99, 987.77, 1174.66, 1318.51,
+		1046.50, 880.00, 783.99, 659.25,
+		587.33, 659.25, 783.99, 880.00,
+		987.77, 880.00, 659.25, 523.25,
+	]
+	for i in n:
+		var t := float(i) / rate
+		var fade := minf(1.0, minf(t / 0.9, (dur - t) / 0.9))
+		var chord_idx := int(t / 4.0) % chords.size()
+		var chord: Array = chords[chord_idx]
+		var section_swell := 0.92 + 0.08 * sin(TAU * t / 32.0)
+		var sample := 0.0
+		for hz in chord:
+			var hz_f := float(hz)
+			sample += sin(TAU * hz_f * 0.5 * t) * 0.056 * section_swell
+			sample += sin(TAU * hz_f * t) * 0.017
+		var ripple_t := fmod(t, 0.5)
+		var ripple_idx := int(t * 2.0) % ripples.size()
+		var ripple_hz: float = ripples[ripple_idx]
+		var ripple_amp := 0.058 + 0.014 * sin(TAU * (float(ripple_idx) / float(ripples.size())))
+		sample += sin(TAU * ripple_hz * t) * exp(-ripple_t * 8.0) * ripple_amp
+		if int(t * 2.0) % 16 == 7:
+			var echo_t := fmod(t + 0.18, 0.5)
+			sample += sin(TAU * ripple_hz * 0.5 * t) * exp(-echo_t * 7.0) * 0.026
+		sample += sin(TAU * (110.0 + sin(t * 0.75) * 8.0) * t) * 0.030
+		var v := int(sample * fade * 32767.0)
+		b.encode_s16(i * 2, clampi(v, -32768, 32767))
+	return _wav(b, rate, true)

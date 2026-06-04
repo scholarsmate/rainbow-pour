@@ -39,6 +39,11 @@ The project includes:
 
 ## Next Steps / Future Enhancements
 
+- [ ] Build pre-generated Water Sort puzzle progression:
+  - Add an offline generator script that creates a large puzzle pool, solves each board, and records metadata.
+  - Generate roughly 500 puzzles per batch, then sort by difficulty using optimal pours, branching factor, dead-end risk, capacity, beaker count, and solver time.
+  - Emit a durable data file for the game to load, likely CSV for simple iteration or SQLite if level metadata/progress queries get richer.
+  - Add level progression and per-level score tracking so players can improve scores across the full set, similar to Overcooked-style stage mastery.
 - [ ] Add animations for disk movement
 - [ ] Add sound effects
 - [ ] Add particle effects on successful moves

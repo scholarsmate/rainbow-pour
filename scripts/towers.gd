@@ -1,14 +1,24 @@
 extends Node2D
 
 signal disk_moved
+signal goal_changed(optimal_pours: int)
+signal no_moves_available
 
-const BEAKERS_PER_ROW = 4
-const BEAKER_COUNT    = 8
-const EMPTY_BEAKERS   = 2
-const FILLED_BEAKERS  = BEAKER_COUNT - EMPTY_BEAKERS
-const WALL            = 5
+const WALL = 5
+const PLAY_TOP = 145.0
+const PLAY_BOTTOM = 650.0
+const OPTIMAL_SOLVER_CALCULATING = -2
+const SOLVER_NODE_LIMIT = 750000
+const SOLVER_STEPS_PER_FRAME = 900
+const FINISHED_BEAKER_PULSE_TIME = 1.25
+const LIQUID_ALPHA = 0.86
 
 var beaker_capacity:    int   = 4
+var beaker_count:       int   = 8
+var empty_beakers:      int   = 2
+var filled_beakers:     int   = 6
+var beakers_per_row:    int   = 4
+var optimal_pours:      int   = -1
 var liquid_unit_height: int   = 40
 var beaker_width:       int   = 80
 var beaker_height:      int   = 180
@@ -20,8 +30,25 @@ var _vis_fill:        Array = []
 var _is_animating:    bool  = false
 var _anim_src:        int   = -1
 var _anim_src_snap:   Array = []
+var _undo_beakers:    Array = []
+var _undo_vis_fill:   Array = []
+var _starting_beakers: Array = []
+var _solver_active:   bool  = false
+var _solver_queue:    Array = []
+var _solver_depths:   Array = []
+var _solver_visited:  Dictionary = {}
+var _solver_front:    int   = 0
+var _solver_searched: int   = 0
 var _time:            float = 0.0
 var _particles:       Array = []
+var _finished_beakers: Array = []
+var _finish_pulses:   Array = []
+var _press_beaker:    int   = -1
+var _press_position:  Vector2 = Vector2.ZERO
+var _press_had_selection: bool = false
+var _dragging:        bool  = false
+var _drag_pos:        Vector2 = Vector2.ZERO
+var _drag_hover:      int   = -1
 
 var liquid_colors: Array = [
 	Color(0.95, 0.18, 0.18),
@@ -30,6 +57,8 @@ var liquid_colors: Array = [
 	Color(0.06, 0.84, 0.30),
 	Color(0.15, 0.50, 1.00),
 	Color(0.72, 0.18, 0.98),
+	Color(0.07, 0.74, 0.86),
+	Color(1.00, 0.27, 0.58),
 ]
 
 func _ready():
@@ -39,11 +68,15 @@ func _ready():
 
 func _apply_capacity():
 	beaker_capacity    = GameSettings.beaker_capacity
+	beaker_count       = GameSettings.get_beaker_count()
+	empty_beakers      = GameSettings.get_empty_beaker_count()
+	filled_beakers     = GameSettings.get_filled_beaker_count()
+	beakers_per_row    = int(ceil(float(beaker_count) / 2.0))
 	# Scale unit height so both rows always fit on screen
-	# Available vertical space between top UI (~85px) and bottom UI (~650px) = 565px
-	# Two rows + 30px gap => each row bucket = (565 - 30) / 2 = 267px
-	# Leave 20px headroom above liquid => unit_h = (267 - 20) / capacity
-	var max_unit := int((565 - 30) / 2 - 20) / beaker_capacity
+	# Available vertical space leaves room for settings/goal UI above the board.
+	var play_height := PLAY_BOTTOM - PLAY_TOP
+	# Leave 20px headroom above each row's liquid.
+	var max_unit := int(((play_height - 30.0) / 2.0 - 20.0) / float(beaker_capacity))
 	liquid_unit_height = clampi(max_unit, 18, 40)
 	beaker_height      = beaker_capacity * liquid_unit_height
 	# Wider beakers for smaller capacities (more slots = less width needed per visual)
@@ -51,7 +84,14 @@ func _apply_capacity():
 
 func _process(delta: float):
 	_time += delta
-	var dirty := selected_beaker >= 0 or _is_animating
+	if _solver_active:
+		_process_optimal_solver(SOLVER_STEPS_PER_FRAME)
+	var dirty := selected_beaker >= 0 or _is_animating or _dragging or _has_finished_beakers()
+	for i in _finish_pulses.size():
+		if float(_finish_pulses[i]) <= 0.0:
+			continue
+		_finish_pulses[i] = maxf(0.0, float(_finish_pulses[i]) - delta)
+		dirty = true
 	for pt in _particles:
 		pt["vel"] += Vector2(0, 520.0 * delta)
 		pt["pos"] += pt["vel"] * delta
@@ -64,15 +104,17 @@ func _process(delta: float):
 
 func setup_beaker_positions():
 	beaker_positions.clear()
-	var spacing_x := 240.0
-	var sx        := (1280.0 - (BEAKERS_PER_ROW - 1) * spacing_x) / 2.0
+	var spacing_x := clampf(960.0 / maxf(float(beakers_per_row - 1), 1.0), 200.0, 240.0)
+	var sx        := (1280.0 - float(beakers_per_row - 1) * spacing_x) / 2.0
 	# Center each row vertically in its half of the available play area
-	var avail     := 565.0
+	var avail     := PLAY_BOTTOM - PLAY_TOP
 	var row_slot  := (avail - 30.0) / 2.0
-	var base1     := 85.0 + row_slot / 2.0 + float(beaker_height) / 2.0
-	var base2     := 85.0 + row_slot + 30.0 + row_slot / 2.0 + float(beaker_height) / 2.0
+	var base1     := PLAY_TOP + row_slot / 2.0 + float(beaker_height) / 2.0
+	var base2     := PLAY_TOP + row_slot + 30.0 + row_slot / 2.0 + float(beaker_height) / 2.0
 	for row in 2:
-		for col in BEAKERS_PER_ROW:
+		for col in beakers_per_row:
+			if beaker_positions.size() >= beaker_count:
+				return
 			beaker_positions.append(Vector2(sx + col * spacing_x, [base1, base2][row]))
 
 func generate_puzzle():
@@ -80,28 +122,40 @@ func generate_puzzle():
 	_particles.clear()
 	_anim_src = -1
 	_anim_src_snap.clear()
+	_clear_pointer_state()
+	_clear_undo_state()
+	_reset_finish_state()
 	var pool: Array = []
-	for i in FILLED_BEAKERS:
+	for i in filled_beakers:
 		for j in beaker_capacity:
 			pool.append(i)
 	pool.shuffle()
-	for i in FILLED_BEAKERS:
+	for i in filled_beakers:
 		var b := []
 		for j in beaker_capacity:
 			b.append(pool[i * beaker_capacity + j])
 		beakers.append(b)
-	for k in EMPTY_BEAKERS:
+	for k in empty_beakers:
 		beakers.append([])
-	_vis_fill.resize(BEAKER_COUNT)
-	for i in BEAKER_COUNT:
+	_vis_fill.resize(beaker_count)
+	for i in beaker_count:
 		_vis_fill[i] = float(beakers[i].size())
 	if check_complete():
 		generate_puzzle()
 		return
+	_sync_finished_beakers(false)
+	_starting_beakers = _copy_state(beakers)
+	_start_optimal_solver(_starting_beakers)
 	queue_redraw()
 
 func can_pour(src: int, dst: int) -> bool:
+	if src < 0 or src >= beaker_count or dst < 0 or dst >= beaker_count:
+		return false
+	if src == dst:
+		return false
 	if beakers[src].is_empty():
+		return false
+	if _is_beaker_complete(src):
 		return false
 	if beakers[dst].size() >= beaker_capacity:
 		return false
@@ -110,6 +164,7 @@ func can_pour(src: int, dst: int) -> bool:
 	return beakers[src].back() == beakers[dst].back()
 
 func pour(src: int, dst: int):
+	_store_undo_state()
 	var old_src := float(beakers[src].size())
 	var old_dst := float(beakers[dst].size())
 	_anim_src      = src
@@ -129,9 +184,13 @@ func pour(src: int, dst: int):
 		_anim_src = -1
 		_anim_src_snap.clear()
 		_is_animating = false
+		_sync_finished_beakers(true)
+		var complete := check_complete()
 		emit_signal("disk_moved")
-		if check_complete():
+		if complete:
 			_celebrate()
+		elif not has_available_moves():
+			emit_signal("no_moves_available")
 	tw.chain().tween_callback(on_done)
 
 func _set_vis(v: float, idx: int) -> void:
@@ -150,29 +209,390 @@ func check_complete() -> bool:
 				return false
 	return true
 
+func _is_beaker_complete(idx: int) -> bool:
+	if idx < 0 or idx >= beaker_count:
+		return false
+	var b: Array = beakers[idx]
+	if b.size() != beaker_capacity:
+		return false
+	var c = b[0]
+	for u in b:
+		if u != c:
+			return false
+	return true
+
+func _reset_finish_state() -> void:
+	_finished_beakers.clear()
+	_finish_pulses.clear()
+	for i in beaker_count:
+		_finished_beakers.append(false)
+		_finish_pulses.append(0.0)
+
+func _sync_finished_beakers(trigger_effects: bool) -> void:
+	if _finished_beakers.size() != beaker_count or _finish_pulses.size() != beaker_count:
+		_reset_finish_state()
+	for i in beaker_count:
+		var was_finished := bool(_finished_beakers[i])
+		var is_finished := _is_beaker_complete(i)
+		_finished_beakers[i] = is_finished
+		if trigger_effects and is_finished and not was_finished:
+			_trigger_finished_beaker_effect(i)
+
+func _has_finished_beakers() -> bool:
+	for finished in _finished_beakers:
+		if bool(finished):
+			return true
+	return false
+
+func _get_finish_pulse(idx: int) -> float:
+	if idx < 0 or idx >= _finish_pulses.size():
+		return 0.0
+	return float(_finish_pulses[idx]) / FINISHED_BEAKER_PULSE_TIME
+
+func _trigger_finished_beaker_effect(idx: int) -> void:
+	_finish_pulses[idx] = FINISHED_BEAKER_PULSE_TIME
+	var pos: Vector2 = beaker_positions[idx]
+	var color_idx: int = int(beakers[idx][0])
+	var base_color: Color = liquid_colors[color_idx]
+	for n in 28:
+		var ml := randf_range(0.55, 1.10)
+		var angle := TAU * float(n) / 28.0 + randf_range(-0.12, 0.12)
+		var rim_offset := Vector2(cos(angle) * randf_range(18.0, float(beaker_width) * 0.58), randf_range(-10.0, 8.0))
+		_particles.append({
+			"pos":      pos + Vector2(0, -float(beaker_height) - 4.0) + rim_offset,
+			"vel":      Vector2(cos(angle) * randf_range(80.0, 180.0), randf_range(-250.0, -90.0)),
+			"color":    base_color.lightened(randf_range(0.18, 0.45)),
+			"radius":   randf_range(3.0, 8.0),
+			"life":     ml,
+			"max_life": ml,
+			"alpha":    1.0,
+		})
+	queue_redraw()
+
+func has_available_moves() -> bool:
+	return count_available_moves() > 0
+
+func count_available_moves() -> int:
+	var count := 0
+	for src in beaker_count:
+		for dst in beaker_count:
+			if can_pour(src, dst):
+				count += 1
+	return count
+
+func get_possible_destinations(src: int) -> Array:
+	var destinations := []
+	for dst in beaker_count:
+		if can_pour(src, dst):
+			destinations.append(dst)
+	return destinations
+
+func get_board_signature() -> String:
+	return _encode_exact_state(beakers)
+
+func can_undo_last_pour() -> bool:
+	return not _is_animating and not _undo_beakers.is_empty()
+
+func undo_last_pour() -> bool:
+	if not can_undo_last_pour():
+		return false
+	beakers = _copy_state(_undo_beakers)
+	_vis_fill = _undo_vis_fill.duplicate()
+	selected_beaker = -1
+	_is_animating = false
+	_anim_src = -1
+	_anim_src_snap.clear()
+	_particles.clear()
+	_clear_pointer_state()
+	_clear_undo_state()
+	_reset_finish_state()
+	_sync_finished_beakers(false)
+	queue_redraw()
+	return true
+
+func retry_current_puzzle() -> bool:
+	if _starting_beakers.is_empty():
+		return false
+	beakers = _copy_state(_starting_beakers)
+	_vis_fill.resize(beaker_count)
+	for i in beaker_count:
+		_vis_fill[i] = float(beakers[i].size())
+	selected_beaker = -1
+	_is_animating = false
+	_anim_src = -1
+	_anim_src_snap.clear()
+	_particles.clear()
+	_clear_pointer_state()
+	_clear_undo_state()
+	_reset_finish_state()
+	_sync_finished_beakers(false)
+	emit_signal("goal_changed", optimal_pours)
+	queue_redraw()
+	return true
+
 func reset():
 	selected_beaker = -1
 	_is_animating   = false
 	_anim_src       = -1
 	_anim_src_snap.clear()
 	_particles.clear()
+	_clear_pointer_state()
+	_clear_undo_state()
+	_reset_finish_state()
 	_apply_capacity()
 	setup_beaker_positions()
 	generate_puzzle()
 
+func _store_undo_state():
+	_undo_beakers = _copy_state(beakers)
+	_undo_vis_fill = _vis_fill.duplicate()
+
+func _clear_undo_state():
+	_undo_beakers.clear()
+	_undo_vis_fill.clear()
+
+# ---------------------------------------------------------------------------
+# Solver
+# ---------------------------------------------------------------------------
+
+func _start_optimal_solver(state: Array):
+	var start := _copy_state(state)
+	if _state_complete(start):
+		_finish_optimal_solver(0)
+		return
+
+	var start_key := _encode_state(start)
+	_solver_queue = [start]
+	_solver_depths = [0]
+	_solver_visited = {start_key: true}
+	_solver_front = 0
+	_solver_searched = 0
+	_solver_active = true
+	optimal_pours = OPTIMAL_SOLVER_CALCULATING
+	emit_signal("goal_changed", optimal_pours)
+
+func _process_optimal_solver(max_steps: int):
+	var processed := 0
+	while _solver_active and processed < max_steps:
+		if _solver_front >= _solver_queue.size():
+			_finish_optimal_solver(-1)
+			return
+		if _solver_searched >= SOLVER_NODE_LIMIT:
+			_finish_optimal_solver(-1)
+			return
+
+		var state: Array = _solver_queue[_solver_front]
+		var depth: int = _solver_depths[_solver_front]
+		_solver_queue[_solver_front] = null
+		_solver_front += 1
+		_solver_searched += 1
+		processed += 1
+
+		var seen_sources := {}
+		for src in state.size():
+			var from: Array = state[src]
+			if from.is_empty() or _state_tube_complete(from):
+				continue
+			var source_key := _tube_key(from)
+			if seen_sources.has(source_key):
+				continue
+			seen_sources[source_key] = true
+
+			var seen_destinations := {}
+			var used_empty_destination := false
+			for dst in state.size():
+				if src == dst:
+					continue
+				var to: Array = state[dst]
+				if to.is_empty():
+					if used_empty_destination or _state_tube_uniform(from):
+						continue
+					used_empty_destination = true
+				else:
+					var destination_key := _tube_key(to)
+					if seen_destinations.has(destination_key):
+						continue
+					seen_destinations[destination_key] = true
+
+				if not _state_can_pour(state, src, dst):
+					continue
+				var next := _state_after_pour(state, src, dst)
+				var key := _encode_state(next)
+				if _solver_visited.has(key):
+					continue
+				if _state_complete(next):
+					_finish_optimal_solver(depth + 1)
+					return
+				_solver_visited[key] = true
+				_solver_queue.append(next)
+				_solver_depths.append(depth + 1)
+
+func _finish_optimal_solver(result: int):
+	_solver_active = false
+	_solver_queue.clear()
+	_solver_depths.clear()
+	_solver_visited.clear()
+	_solver_front = 0
+	_solver_searched = 0
+	optimal_pours = result
+	emit_signal("goal_changed", optimal_pours)
+
+func _copy_state(state: Array) -> Array:
+	var copy := []
+	for b in state:
+		copy.append(b.duplicate())
+	return copy
+
+func _state_can_pour(state: Array, src: int, dst: int) -> bool:
+	if src == dst:
+		return false
+	var from: Array = state[src]
+	var to: Array = state[dst]
+	if from.is_empty():
+		return false
+	if to.size() >= beaker_capacity:
+		return false
+	if to.is_empty():
+		return true
+	return from.back() == to.back()
+
+func _state_tube_complete(tube: Array) -> bool:
+	return tube.size() == beaker_capacity and _state_tube_uniform(tube)
+
+func _state_tube_uniform(tube: Array) -> bool:
+	if tube.is_empty():
+		return true
+	var c = tube[0]
+	for color in tube:
+		if color != c:
+			return false
+	return true
+
+func _tube_key(tube: Array) -> String:
+	var colors := PackedStringArray()
+	for color in tube:
+		colors.append(str(int(color)))
+	return ",".join(colors)
+
+func _state_after_pour(state: Array, src: int, dst: int) -> Array:
+	var next := _copy_state(state)
+	var from: Array = next[src]
+	var to: Array = next[dst]
+	var top = from.back()
+	while not from.is_empty() and from.back() == top and to.size() < beaker_capacity:
+		to.append(from.pop_back())
+	return next
+
+func _state_complete(state: Array) -> bool:
+	for b in state:
+		if b.is_empty():
+			continue
+		if b.size() != beaker_capacity:
+			return false
+		var c = b[0]
+		for u in b:
+			if u != c:
+				return false
+	return true
+
+func _encode_state(state: Array) -> String:
+	var tubes := PackedStringArray()
+	for b in state:
+		var colors := PackedStringArray()
+		for color in b:
+			colors.append(str(int(color)))
+		tubes.append(",".join(colors))
+	tubes.sort()
+	return "|".join(tubes)
+
+func _encode_exact_state(state: Array) -> String:
+	var tubes := PackedStringArray()
+	for b in state:
+		var colors := PackedStringArray()
+		for color in b:
+			colors.append(str(int(color)))
+		tubes.append(",".join(colors))
+	return "|".join(tubes)
+
 func _input(event: InputEvent):
 	if _is_animating:
 		return
-	if not (event is InputEventMouseButton):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			_begin_pointer(event.position)
+		else:
+			_finish_pointer(event.position)
+	elif event is InputEventMouseMotion:
+		_update_pointer(event.position)
+	elif event is InputEventScreenTouch:
+		if event.pressed:
+			_begin_pointer(event.position)
+		else:
+			_finish_pointer(event.position)
+	elif event is InputEventScreenDrag:
+		_update_pointer(event.position)
+
+func _begin_pointer(pos: Vector2) -> void:
+	var idx := _beaker_at(pos)
+	if idx < 0:
 		return
-	if not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+	_press_beaker = idx
+	_press_position = pos
+	_press_had_selection = selected_beaker >= 0
+	_dragging = false
+	_drag_pos = pos
+	_drag_hover = idx
+	if selected_beaker < 0 and not beakers[idx].is_empty() and not _is_beaker_complete(idx):
+		selected_beaker = idx
+		if AudioManager:
+			AudioManager.play_select()
+		queue_redraw()
+
+func _update_pointer(pos: Vector2) -> void:
+	if _press_beaker < 0:
 		return
-	var idx := _beaker_at(event.position)
-	if idx >= 0:
-		_handle_click(idx)
+	_drag_pos = pos
+	_drag_hover = _beaker_at(pos)
+	if not _dragging and _press_position.distance_to(pos) >= 12.0:
+		_dragging = true
+	if _dragging:
+		queue_redraw()
+
+func _finish_pointer(pos: Vector2) -> void:
+	if _press_beaker < 0:
+		return
+	var release_idx := _beaker_at(pos)
+	var was_dragging := _dragging
+	if _dragging:
+		if selected_beaker == _press_beaker:
+			if release_idx >= 0 and release_idx != _press_beaker:
+				_resolve_selected_target(release_idx)
+			else:
+				queue_redraw()
+		elif _press_had_selection and release_idx >= 0:
+			_resolve_selected_target(release_idx)
+	else:
+		if _press_had_selection:
+			if release_idx >= 0:
+				_handle_click(release_idx)
+		elif release_idx >= 0 and release_idx != _press_beaker and selected_beaker == _press_beaker:
+			_resolve_selected_target(release_idx)
+		else:
+			queue_redraw()
+	_clear_pointer_state()
+	if was_dragging and not _is_animating:
+		queue_redraw()
+
+func _clear_pointer_state() -> void:
+	_press_beaker = -1
+	_press_position = Vector2.ZERO
+	_press_had_selection = false
+	_dragging = false
+	_drag_pos = Vector2.ZERO
+	_drag_hover = -1
 
 func _beaker_at(pos: Vector2) -> int:
-	for i in BEAKER_COUNT:
+	for i in beaker_count:
 		var bp: Vector2 = beaker_positions[i]
 		if (abs(pos.x - bp.x) <= beaker_width / 2.0 + 12
 				and pos.y >= bp.y - beaker_height - 12
@@ -182,27 +602,31 @@ func _beaker_at(pos: Vector2) -> int:
 
 func _handle_click(idx: int):
 	if selected_beaker < 0:
-		if not beakers[idx].is_empty():
+		if not beakers[idx].is_empty() and not _is_beaker_complete(idx):
 			selected_beaker = idx
 			if AudioManager:
 				AudioManager.play_select()
 			queue_redraw()
 	else:
-		if selected_beaker == idx:
-			selected_beaker = -1
-			queue_redraw()
-			return
-		if can_pour(selected_beaker, idx):
-			pour(selected_beaker, idx)
-			selected_beaker = -1
+		_resolve_selected_target(idx)
+
+func _resolve_selected_target(idx: int) -> void:
+	if selected_beaker == idx:
+		selected_beaker = -1
+		queue_redraw()
+		return
+	var src := selected_beaker
+	if can_pour(src, idx):
+		selected_beaker = -1
+		pour(src, idx)
+	else:
+		if AudioManager:
+			AudioManager.play_invalid()
+		if not beakers[idx].is_empty() and not _is_beaker_complete(idx):
+			selected_beaker = idx
 		else:
-			if AudioManager:
-				AudioManager.play_invalid()
-			if not beakers[idx].is_empty():
-				selected_beaker = idx
-			else:
-				selected_beaker = -1
-			queue_redraw()
+			selected_beaker = -1
+		queue_redraw()
 
 # ---------------------------------------------------------------------------
 # Drawing
@@ -210,7 +634,8 @@ func _handle_click(idx: int):
 
 func _draw():
 	_draw_bg()
-	for i in BEAKER_COUNT:
+	_draw_drag_path()
+	for i in beaker_count:
 		_draw_beaker(i)
 	for pt in _particles:
 		draw_circle(pt["pos"], pt["radius"],
@@ -221,11 +646,21 @@ func _draw_bg():
 		draw_circle(Vector2(640, 360), float(i) * 72.0,
 				Color(0.15, 0.25, 0.45, float(i) / 10.0 * 0.025))
 
+func _draw_drag_path():
+	if not _dragging or selected_beaker < 0:
+		return
+	var source: Vector2 = beaker_positions[selected_beaker] + Vector2(0, -float(beaker_height) - 16.0)
+	var legal_hover: bool = _drag_hover >= 0 and can_pour(selected_beaker, _drag_hover)
+	var color: Color = Color(0.28, 1.0, 0.62, 0.58) if legal_hover else Color(1.0, 0.86, 0.18, 0.48)
+	draw_line(source, _drag_pos, color, 4.0, true)
+	draw_circle(_drag_pos, 9.0, color)
+
 func _draw_cylinder_rect(x: float, y: float, w: float, h: float, col: Color):
 	# Simulate a cylindrical surface: dark edges, bright centre
+	var liquid_col := Color(col.r, col.g, col.b, LIQUID_ALPHA)
 	var cx    := x + w * 0.5
-	var dim   := col.darkened(0.42)
-	var mid   := col.lightened(0.18)
+	var dim   := liquid_col.darkened(0.42)
+	var mid   := liquid_col.lightened(0.18)
 	# Left half: dim -> mid
 	draw_polygon(
 		PackedVector2Array([Vector2(x,y), Vector2(cx,y), Vector2(cx,y+h), Vector2(x,y+h)]),
@@ -251,6 +686,23 @@ func _draw_beaker(idx: int):
 	var hw   := float(beaker_width) / 2.0
 	var bh   := float(beaker_height)
 	var isel := (idx == selected_beaker)
+	var is_finished := _is_beaker_complete(idx)
+	var is_target := selected_beaker >= 0 and idx != selected_beaker and can_pour(selected_beaker, idx)
+
+	if is_finished:
+		_draw_finished_beaker_glow(idx, pos, hw, bh)
+
+	if is_target:
+		var target_pulse := 0.24 + 0.10 * sin(_time * 7.5 + float(idx))
+		var outline := Color(0.32, 1.0, 0.64, 0.92)
+		var fill := Color(0.20, 0.95, 0.56, target_pulse)
+		if idx == _drag_hover:
+			outline = Color(0.72, 1.0, 0.42, 1.0)
+			fill = Color(0.48, 1.0, 0.32, target_pulse + 0.10)
+		var rect := Rect2(pos.x - hw - 12, pos.y - bh - 12,
+				float(beaker_width) + 24.0, bh + 24.0)
+		draw_rect(rect, fill, true)
+		draw_rect(rect, outline, false, 3.0)
 
 	# --- Pulsing selection glow ---
 	if isel:
@@ -283,7 +735,7 @@ func _draw_beaker(idx: int):
 		# Shimmer line at top of each full segment
 		if f1 >= float(ui + 1) - 0.01:
 			draw_rect(Rect2(inner_x + 2, ly, inner_w - 4, 3),
-					Color(1.0, 1.0, 1.0, 0.30), true)
+					Color(1.0, 1.0, 1.0, 0.22), true)
 
 	# --- Glass tube walls ---
 	# Main wall body with a subtle inner gradient (left bright, right slightly dim)
@@ -324,6 +776,63 @@ func _draw_beaker(idx: int):
 	draw_rect(Rect2(pos.x - hw + WALL, pos.y - bh, 3, bh),
 			Color(1, 1, 1, 0.18), true)
 
+	if is_finished:
+		_draw_finished_beaker_lid(idx, pos, hw, bh)
+
+func _draw_finished_beaker_glow(idx: int, pos: Vector2, hw: float, bh: float) -> void:
+	var color_idx: int = int(beakers[idx][0])
+	var base: Color = liquid_colors[color_idx].lightened(0.28)
+	var pulse := _get_finish_pulse(idx)
+	var idle := 0.14 + 0.05 * sin(_time * 3.4 + float(idx) * 0.7)
+	var rect := Rect2(pos.x - hw - 15.0, pos.y - bh - 15.0, float(beaker_width) + 30.0, bh + 30.0)
+	for layer in 5:
+		var t := float(layer) / 4.0
+		var grow := lerpf(24.0, 4.0, t) + pulse * lerpf(26.0, 5.0, t)
+		var alpha := (1.0 - t) * (idle * 0.18 + 0.035) + pulse * (1.0 - t) * 0.08
+		draw_rect(rect.grow(grow), Color(base.r, base.g, base.b, alpha), true)
+	_draw_ellipse_filled(Vector2(pos.x, pos.y - bh - 6.0),
+			Vector2(hw + 26.0 + pulse * 16.0, 15.0 + pulse * 6.0),
+			Color(1.0, 0.90, 0.38, 0.11 + pulse * 0.14))
+	_draw_ellipse_filled(Vector2(pos.x, pos.y - WALL / 2.0),
+			Vector2(hw + 18.0, 10.0),
+			Color(base.r, base.g, base.b, 0.06))
+	if pulse > 0.0:
+		_draw_ellipse_filled(Vector2(pos.x, pos.y - bh - 6.0),
+				Vector2(hw + 48.0 + (1.0 - pulse) * 38.0, 22.0 + (1.0 - pulse) * 16.0),
+				Color(1.0, 0.92, 0.36, pulse * 0.10))
+
+func _draw_finished_beaker_lid(idx: int, pos: Vector2, hw: float, bh: float) -> void:
+	var pulse := _get_finish_pulse(idx)
+	var top := pos.y - bh
+	var color_idx: int = int(beakers[idx][0])
+	var liquid: Color = liquid_colors[color_idx]
+	var bob := sin(_time * 3.0 + float(idx)) * 1.2
+	var lid_center := Vector2(pos.x, top - 5.0 + bob)
+	var lid_rx := hw + 10.0 + pulse * 4.0
+	var lid_ry := 8.0 + pulse * 1.5
+	_draw_ellipse_filled(lid_center + Vector2(0.0, 3.5), Vector2(lid_rx + 2.0, lid_ry),
+			Color(0.0, 0.0, 0.0, 0.30))
+	draw_rect(Rect2(pos.x - lid_rx, top - 5.0 + bob, lid_rx * 2.0, 8.0),
+			Color(0.10, 0.13, 0.18, 0.92), true)
+	_draw_ellipse_filled(lid_center, Vector2(lid_rx, lid_ry),
+			Color(liquid.r, liquid.g, liquid.b, 0.90).lightened(0.16))
+	_draw_ellipse_filled(lid_center + Vector2(0.0, -1.0), Vector2(lid_rx - 7.0, lid_ry - 3.0),
+			Color(1.0, 0.92, 0.48, 0.32 + pulse * 0.18))
+	_draw_ellipse_filled(lid_center + Vector2(0.0, -8.0), Vector2(13.0 + pulse * 2.0, 5.0 + pulse),
+			Color(0.96, 0.86, 0.38, 0.92))
+	draw_line(Vector2(pos.x - lid_rx + 8.0, top - 8.0 + bob),
+			Vector2(pos.x + lid_rx - 8.0, top - 8.0 + bob),
+			Color(1.0, 1.0, 1.0, 0.26), 2.0, true)
+	var sweep := fmod(_time * 46.0 + float(idx) * 17.0, bh + 46.0) - 23.0
+	var sweep_y := top + sweep
+	if sweep_y >= top and sweep_y <= pos.y:
+		draw_rect(Rect2(pos.x - hw + WALL + 3.0, sweep_y, float(beaker_width) - WALL * 2.0 - 6.0, 5.0),
+				Color(1.0, 1.0, 1.0, 0.16), true)
+	if pulse > 0.0:
+		var shine_color := Color(1.0, 0.95, 0.42, pulse)
+		draw_line(Vector2(pos.x - hw - 18.0, top - 20.0), Vector2(pos.x - hw + 6.0, top - 44.0), shine_color, 3.0, true)
+		draw_line(Vector2(pos.x + hw + 18.0, top - 8.0), Vector2(pos.x + hw + 42.0, top - 32.0), shine_color, 3.0, true)
+
 func _draw_ellipse_filled(center: Vector2, radii: Vector2, col: Color):
 	var pts  := PackedVector2Array()
 	var cols := PackedColorArray()
@@ -340,7 +849,7 @@ func _draw_ellipse_filled(center: Vector2, radii: Vector2, col: Color):
 
 func _celebrate():
 	for n in 70:
-		var bp: Vector2 = beaker_positions[randi() % BEAKER_COUNT]
+		var bp: Vector2 = beaker_positions[randi() % beaker_count]
 		var ml := randf_range(0.8, 2.2)
 		_particles.append({
 			"pos":      bp + Vector2(randf_range(-35, 35), randf_range(-float(beaker_height) * 0.9, -5.0)),
