@@ -5,17 +5,18 @@ extends Node2D
 
 @onready var towers = $Towers
 @onready var move_counter = $UI/MoveCounter
-@onready var depth_slider = $DepthRow/DepthSlider
-@onready var depth_value  = $DepthRow/DepthValue
+@onready var depth_slider = get_node_or_null("DepthRow/DepthSlider")
+@onready var depth_value  = get_node_or_null("DepthRow/DepthValue")
 
 var moves = 0
 
 func _ready():
 	towers.disk_moved.connect(_on_disk_moved)
 	update_move_counter()
-	# Initialize depth slider from GameSettings
-	depth_slider.value = GameSettings.beaker_capacity
-	depth_value.text   = str(GameSettings.beaker_capacity)
+	# Initialize depth slider from GameSettings (only if the slider exists)
+	if depth_slider:
+		depth_slider.value = GameSettings.beaker_capacity
+		depth_value.text   = str(GameSettings.beaker_capacity)
 
 func _on_disk_moved():
 	moves += 1
@@ -119,6 +120,8 @@ func show_victory_screen():
 	  .set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _on_depth_changed(value: float):
+	if not depth_slider:
+		return
 	GameSettings.beaker_capacity = int(value)
 	depth_value.text = str(int(value))
 
