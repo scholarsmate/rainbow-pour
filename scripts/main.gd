@@ -25,9 +25,12 @@ const STAR_SPARK := "✦"
 @onready var instructions_label: Label = get_node_or_null("UI/Instructions")
 
 var settings_overlay: Control
+var disk_count_slider: HSlider
+var disk_count_value: Label
 var depth_slider: HSlider
 var depth_value: Label
 var goal_toggle: CheckButton
+var special_beakers_toggle: CheckButton
 var palette_option: OptionButton
 var liquid_symbols_toggle: CheckButton
 var liquid_alpha_slider: HSlider
@@ -47,6 +50,7 @@ var _mulligans_used := 0
 var _cheats_used := 0
 var _goal_spinner_time := 0.0
 var _goal_spinner_frame := 0
+var _solver_progress_text := ""
 var _victory_stars_shown := false
 var _score_forced_zero := false
 var _default_instructions_text := ""
@@ -58,6 +62,8 @@ func _ready():
 	towers.disk_moved.connect(_on_disk_moved)
 	if towers.has_signal("goal_changed"):
 		towers.connect("goal_changed", Callable(self, "_on_goal_changed"))
+	if towers.has_signal("solver_progress"):
+		towers.connect("solver_progress", Callable(self, "_on_solver_progress"))
 	if towers.has_signal("no_moves_available"):
 		towers.connect("no_moves_available", Callable(self, "_on_no_moves_available"))
 	if towers.has_signal("cheat_applied"):
@@ -67,6 +73,7 @@ func _ready():
 	if instructions_label:
 		_default_instructions_text = instructions_label.text
 	_build_settings_dialog()
+	_load_pending_board_code_if_any()
 	update_move_counter()
 	update_possible_moves_label()
 	update_goal_label()
@@ -75,6 +82,16 @@ func _ready():
 	_reset_stalemate_tracker()
 	_update_mulligan_button()
 	_check_for_no_moves.call_deferred()
+
+func _load_pending_board_code_if_any() -> void:
+	if not GameSettings.has_method("consume_pending_board_code"):
+		return
+	var code := str(GameSettings.call("consume_pending_board_code")).strip_edges()
+	if code == "":
+		return
+	if towers.has_method("import_board_code") and bool(towers.call("import_board_code", code)):
+		return
+	push_warning("Pending board code failed to load.")
 
 func _process(delta: float):
 	if _get_optimal_pours() != OPTIMAL_SOLVER_CALCULATING:
@@ -95,6 +112,7 @@ func _build_settings_dialog():
 	if not ui:
 		return
 	var has_water_sort_settings := _has_water_sort_settings()
+	var has_hanoi_settings := _has_hanoi_settings()
 
 	settings_overlay = Control.new()
 	settings_overlay.name = "SettingsOverlay"
@@ -114,7 +132,13 @@ func _build_settings_dialog():
 	var card := ColorRect.new()
 	card.name = "SettingsCard"
 	card.color = Color(0.075, 0.09, 0.14, 0.98)
-	var card_size := Vector2(700, 640) if has_water_sort_settings else Vector2(520, 320)
+	var card_size: Vector2
+	if has_water_sort_settings:
+		card_size = Vector2(700, 680)
+	elif has_hanoi_settings:
+		card_size = Vector2(560, 390)
+	else:
+		card_size = Vector2(520, 320)
 	card.custom_minimum_size = card_size
 	card.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	card.offset_left = -card_size.x * 0.5
@@ -145,22 +169,32 @@ func _build_settings_dialog():
 	content.add_child(header)
 
 	var title := Label.new()
-	title.text = "Settings"
+	title.text = tr("Settings")
 	title.add_theme_font_size_override("font_size", 34)
 	title.add_theme_color_override("font_color", Color(0.88, 0.94, 1.0))
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 
 	var close_btn := Button.new()
-	close_btn.text = "Close"
+	close_btn.text = tr("Close")
 	close_btn.custom_minimum_size = Vector2(92, 38)
 	close_btn.add_theme_font_size_override("font_size", 18)
 	close_btn.pressed.connect(_close_settings_dialog)
 	header.add_child(close_btn)
 
+	if has_hanoi_settings:
+		_add_section_label(content, tr("Puzzle"))
+		var disk_controls := _add_labeled_slider_row(content, tr("Discs"))
+		disk_count_slider = disk_controls["slider"] as HSlider
+		disk_count_value = disk_controls["value"] as Label
+		disk_count_slider.min_value = GameSettings.HANOI_DISK_COUNT_MIN
+		disk_count_slider.max_value = GameSettings.HANOI_DISK_COUNT_MAX
+		disk_count_slider.step = 1.0
+		disk_count_slider.value_changed.connect(_on_disk_count_changed)
+
 	if has_water_sort_settings:
-		_add_section_label(content, "Puzzle")
-		var capacity_controls := _add_labeled_slider_row(content, "Slots")
+		_add_section_label(content, tr("Puzzle"))
+		var capacity_controls := _add_labeled_slider_row(content, tr("Slots"))
 		depth_slider = capacity_controls["slider"] as HSlider
 		depth_value = capacity_controls["value"] as Label
 		depth_slider.min_value = GameSettings.CAPACITY_MIN
@@ -170,19 +204,25 @@ func _build_settings_dialog():
 		_add_difficulty_row(content)
 
 		goal_toggle = CheckButton.new()
-		goal_toggle.text = "Show optimal goal"
+		goal_toggle.text = tr("Show optimal goal")
 		goal_toggle.add_theme_font_size_override("font_size", 18)
 		goal_toggle.toggled.connect(_on_show_goal_toggled)
 		content.add_child(goal_toggle)
 
+		special_beakers_toggle = CheckButton.new()
+		special_beakers_toggle.text = tr("Bonus beakers")
+		special_beakers_toggle.add_theme_font_size_override("font_size", 18)
+		special_beakers_toggle.toggled.connect(_on_special_beakers_toggled)
+		content.add_child(special_beakers_toggle)
+
 		_add_board_code_row(content)
 
-		_add_section_label(content, "Display")
-		var palette_controls := _add_labeled_option_row(content, "Palette")
+		_add_section_label(content, tr("Display"))
+		var palette_controls := _add_labeled_option_row(content, tr("Palette"))
 		palette_option = palette_controls["option"] as OptionButton
 		palette_option.item_selected.connect(_on_palette_selected)
 
-		var liquid_alpha_controls := _add_labeled_slider_row(content, "Liquid opacity")
+		var liquid_alpha_controls := _add_labeled_slider_row(content, tr("Liquid opacity"))
 		liquid_alpha_slider = liquid_alpha_controls["slider"] as HSlider
 		liquid_alpha_value = liquid_alpha_controls["value"] as Label
 		liquid_alpha_slider.min_value = GameSettings.LIQUID_ALPHA_MIN
@@ -191,13 +231,13 @@ func _build_settings_dialog():
 		liquid_alpha_slider.value_changed.connect(_on_liquid_alpha_changed)
 
 		liquid_symbols_toggle = CheckButton.new()
-		liquid_symbols_toggle.text = "Show liquid symbols"
+		liquid_symbols_toggle.text = tr("Show liquid symbols")
 		liquid_symbols_toggle.add_theme_font_size_override("font_size", 18)
 		liquid_symbols_toggle.toggled.connect(_on_liquid_symbols_toggled)
 		content.add_child(liquid_symbols_toggle)
 
-	_add_section_label(content, "Audio")
-	var music_controls := _add_labeled_slider_row(content, "Music")
+	_add_section_label(content, tr("Audio"))
+	var music_controls := _add_labeled_slider_row(content, tr("Music"))
 	music_slider = music_controls["slider"] as HSlider
 	music_value = music_controls["value"] as Label
 	music_slider.min_value = 0.0
@@ -205,7 +245,7 @@ func _build_settings_dialog():
 	music_slider.step = 0.01
 	music_slider.value_changed.connect(_on_music_volume_changed)
 
-	var effects_controls := _add_labeled_slider_row(content, "Effects")
+	var effects_controls := _add_labeled_slider_row(content, tr("Effects"))
 	effects_slider = effects_controls["slider"] as HSlider
 	effects_value = effects_controls["value"] as Label
 	effects_slider.min_value = 0.0
@@ -215,6 +255,9 @@ func _build_settings_dialog():
 
 func _has_water_sort_settings() -> bool:
 	return towers.has_signal("goal_changed") and towers.has_method("retry_current_puzzle")
+
+func _has_hanoi_settings() -> bool:
+	return towers.get("disk_count") != null and not _has_water_sort_settings()
 
 func _add_section_label(parent: Control, text: String) -> void:
 	var label := Label.new()
@@ -278,7 +321,7 @@ func _add_board_code_row(parent: Control) -> void:
 	parent.add_child(row)
 
 	var label := Label.new()
-	label.text = "Board code"
+	label.text = tr("Board code")
 	label.custom_minimum_size = Vector2(110, 34)
 	label.add_theme_font_size_override("font_size", 18)
 	label.add_theme_color_override("font_color", Color(0.86, 0.90, 0.98))
@@ -292,13 +335,13 @@ func _add_board_code_row(parent: Control) -> void:
 	row.add_child(board_code_input)
 
 	var copy_btn := Button.new()
-	copy_btn.text = "Copy"
+	copy_btn.text = tr("Copy")
 	copy_btn.custom_minimum_size = Vector2(72, 34)
 	copy_btn.pressed.connect(_on_copy_board_code_pressed)
 	row.add_child(copy_btn)
 
 	var load_btn := Button.new()
-	load_btn.text = "Load"
+	load_btn.text = tr("Load")
 	load_btn.custom_minimum_size = Vector2(72, 34)
 	load_btn.pressed.connect(_on_load_board_code_pressed)
 	row.add_child(load_btn)
@@ -315,7 +358,7 @@ func _add_difficulty_row(parent: Control) -> void:
 	parent.add_child(row)
 
 	var label := Label.new()
-	label.text = "Difficulty"
+	label.text = tr("Difficulty")
 	label.custom_minimum_size = Vector2(110, 34)
 	label.add_theme_font_size_override("font_size", 18)
 	label.add_theme_color_override("font_color", Color(0.86, 0.90, 0.98))
@@ -324,7 +367,7 @@ func _add_difficulty_row(parent: Control) -> void:
 
 	for key in ["easy", "normal", "hard"]:
 		var button := Button.new()
-		button.text = GameSettings.DIFFICULTIES[key]["label"]
+		button.text = tr(GameSettings.DIFFICULTIES[key]["label"])
 		button.toggle_mode = true
 		button.custom_minimum_size = Vector2(102, 34)
 		button.add_theme_font_size_override("font_size", 16)
@@ -363,6 +406,12 @@ func _unhandled_input(event: InputEvent):
 		get_viewport().set_input_as_handled()
 
 func _setup_settings_ui():
+	if disk_count_slider:
+		disk_count_slider.min_value = GameSettings.HANOI_DISK_COUNT_MIN
+		disk_count_slider.max_value = GameSettings.HANOI_DISK_COUNT_MAX
+		disk_count_slider.value = GameSettings.hanoi_disk_count
+		if disk_count_value:
+			disk_count_value.text = str(GameSettings.hanoi_disk_count)
 	if depth_slider:
 		depth_slider.min_value = GameSettings.CAPACITY_MIN
 		depth_slider.max_value = GameSettings.CAPACITY_MAX
@@ -371,6 +420,8 @@ func _setup_settings_ui():
 			depth_value.text = str(GameSettings.beaker_capacity)
 	if goal_toggle:
 		goal_toggle.button_pressed = GameSettings.show_goal_hint
+	if special_beakers_toggle:
+		special_beakers_toggle.button_pressed = GameSettings.special_beakers_enabled
 	if palette_option:
 		_sync_palette_option()
 	if liquid_alpha_slider:
@@ -407,12 +458,12 @@ func _on_disk_moved():
 		_show_victory_delayed()
 	elif _is_pour_limit_exceeded():
 		var limit := _get_pour_limit()
-		_show_loss("POUR LIMIT REACHED", "You crossed the %d-%s limit." % [limit, win_label])
+		_show_loss(tr("POUR LIMIT REACHED"), tr("You crossed the %d-%s limit.") % [limit, tr(win_label)])
 	elif _record_repeated_state():
-		_show_loss("STUCK IN A LOOP", "This board state repeated %d times." % REPEATED_STATE_LOSS_COUNT, true)
+		_show_loss(tr("STUCK IN A LOOP"), tr("This board state repeated %d times.") % REPEATED_STATE_LOSS_COUNT, true)
 
 func update_move_counter():
-	move_counter.text = "%s: %d" % [move_label, moves]
+	move_counter.text = "%s: %d" % [tr(move_label), moves]
 
 func update_possible_moves_label():
 	if not possible_moves_label:
@@ -422,12 +473,22 @@ func update_possible_moves_label():
 		return
 	possible_moves_label.visible = true
 	var count := int(towers.call("count_available_moves"))
-	possible_moves_label.text = "Possible moves: %d" % count
+	possible_moves_label.text = tr("Possible moves: %d") % count
 
 func _on_goal_changed(_optimal_pours: int):
+	_solver_progress_text = ""
 	update_goal_label()
 	_refresh_victory_score()
 	_update_music_pressure()
+
+func _on_solver_progress(searched: int, frontier: int, depth: int, limit: int) -> void:
+	_solver_progress_text = "%s/%s checked | depth %d | %s open" % [
+		_format_solver_count(searched),
+		_format_solver_count(limit),
+		depth,
+		_format_solver_count(frontier),
+	]
+	update_goal_label()
 
 func update_goal_label():
 	if not goal_label:
@@ -438,20 +499,23 @@ func update_goal_label():
 	var optimal := _get_optimal_pours()
 	if optimal == OPTIMAL_SOLVER_CALCULATING:
 		goal_label.visible = true
-		goal_label.text = "Goal: finding optimal %s" % GOAL_SPINNER_FRAMES[_goal_spinner_frame]
+		if _solver_progress_text != "":
+			goal_label.text = tr("Goal: finding optimal %s | %s") % [GOAL_SPINNER_FRAMES[_goal_spinner_frame], _solver_progress_text]
+		else:
+			goal_label.text = tr("Goal: finding optimal %s") % GOAL_SPINNER_FRAMES[_goal_spinner_frame]
 		return
 	if optimal < 0:
 		goal_label.visible = true
-		goal_label.text = "Goal: exact solution not found"
+		goal_label.text = tr("Goal: exact solution not found")
 		return
 	var limit := _get_pour_limit()
 	var score := _get_score()
 	goal_label.visible = true
-	goal_label.text = "Goal: %d | Limit: %d | Score: %s" % [optimal, limit, _format_score(score)]
+	goal_label.text = tr("Goal: %d | Limit: %d | Score: %s") % [optimal, limit, _format_score(score)]
 	if _mulligans_used > 0:
-		goal_label.text += " | Undo: +%s" % _format_pours(_get_mulligan_pour_penalty())
+		goal_label.text += tr(" | Undo: +%s") % _format_pours(_get_mulligan_pour_penalty())
 	if _cheats_used > 0:
-		goal_label.text += " | Cheat: +%s" % _format_pours(_get_cheat_pour_penalty())
+		goal_label.text += tr(" | Cheat: +%s") % _format_pours(_get_cheat_pour_penalty())
 
 func _get_optimal_pours() -> int:
 	var raw_goal = towers.get("optimal_pours")
@@ -477,7 +541,12 @@ func _get_score() -> int:
 	var extra := _get_extra_pours()
 	var score_ratio := clampf(1.0 - extra / float(grace), 0.0, 1.0)
 	var score := int(round(float(SCORE_MAX) * score_ratio * score_ratio))
-	return maxi(0, score)
+	return maxi(0, score + _get_beaker_bonus_score())
+
+func _get_beaker_bonus_score() -> int:
+	if not towers or not towers.has_method("get_beaker_bonus_score"):
+		return 0
+	return maxi(0, int(towers.call("get_beaker_bonus_score")))
 
 func _get_mulligan_pour_penalty() -> float:
 	return float(_mulligans_used) * MULLIGAN_POUR_PENALTY
@@ -501,6 +570,14 @@ func _format_pours(value: float) -> String:
 	if is_equal_approx(value, round(value)):
 		return str(int(round(value)))
 	return "%.1f" % value
+
+func _format_solver_count(value: int) -> String:
+	var amount := maxi(0, value)
+	if amount >= 1000000:
+		return "%.1fm" % (float(amount) / 1000000.0)
+	if amount >= 1000:
+		return "%.1fk" % (float(amount) / 1000.0)
+	return str(amount)
 
 func _format_volume(value: float) -> String:
 	return "%d%%" % int(round(clampf(value, 0.0, 1.0) * 100.0))
@@ -614,14 +691,14 @@ func show_victory_screen():
 	card.add_child(vb)
 
 	var solved_lbl := Label.new()
-	solved_lbl.text = "🎉  SOLVED!  🎉"
+	solved_lbl.text = tr("🎉  SOLVED!  🎉")
 	solved_lbl.add_theme_font_size_override("font_size", 66)
 	solved_lbl.add_theme_color_override("font_color", Color(1.0, 0.88, 0.15))
 	solved_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(solved_lbl)
 
 	var count_lbl := Label.new()
-	count_lbl.text = "Completed in %d %s" % [moves, win_label]
+	count_lbl.text = tr("Completed in %d %s") % [moves, tr(win_label)]
 	count_lbl.add_theme_font_size_override("font_size", 28)
 	count_lbl.add_theme_color_override("font_color", Color(0.82, 0.88, 1.0))
 	count_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -650,26 +727,10 @@ func show_victory_screen():
 	hb.add_theme_constant_override("separation", 18)
 	vb.add_child(hb)
 
-	var retry_btn := Button.new()
-	retry_btn.text = "Retry"
-	retry_btn.add_theme_font_size_override("font_size", 22)
-	retry_btn.custom_minimum_size = Vector2(120, 50)
-	retry_btn.pressed.connect(retry_game)
-	hb.add_child(retry_btn)
-
-	var new_btn := Button.new()
-	new_btn.text = "New Puzzle"
-	new_btn.add_theme_font_size_override("font_size", 22)
-	new_btn.custom_minimum_size = Vector2(150, 50)
-	new_btn.pressed.connect(reset_game)
-	hb.add_child(new_btn)
-
-	var menu_btn := Button.new()
-	menu_btn.text = "Menu"
-	menu_btn.add_theme_font_size_override("font_size", 22)
-	menu_btn.custom_minimum_size = Vector2(120, 50)
-	menu_btn.pressed.connect(go_to_menu)
-	hb.add_child(menu_btn)
+	_add_result_button(hb, tr("Retry"), 120.0, retry_game)
+	_add_result_button(hb, tr("New Puzzle"), 150.0, reset_game)
+	_add_result_button(hb, tr("View Board"), 150.0, _return_to_board_from_result)
+	_add_result_button(hb, tr("Menu"), 120.0, go_to_menu)
 
 	var fx_layer := Control.new()
 	fx_layer.name = "StarFxLayer"
@@ -693,17 +754,20 @@ func _refresh_victory_score():
 	var score := _get_score()
 	if score < 0:
 		if _get_optimal_pours() == OPTIMAL_SOLVER_CALCULATING:
-			score_lbl.text = "Score: finding optimal %s" % GOAL_SPINNER_FRAMES[_goal_spinner_frame]
+			score_lbl.text = tr("Score: finding optimal %s") % GOAL_SPINNER_FRAMES[_goal_spinner_frame]
 		else:
-			score_lbl.text = "Score: exact solution not found"
+			score_lbl.text = tr("Score: exact solution not found")
 		return
 	var optimal := _get_optimal_pours()
 	var extra := _get_extra_pours()
-	score_lbl.text = "Score: %s  |  Goal: %d  |  Extra: %s" % [_format_score(score), optimal, _format_pours(extra)]
+	score_lbl.text = tr("Score: %s  |  Goal: %d  |  Extra: %s") % [_format_score(score), optimal, _format_pours(extra)]
+	var bonus := _get_beaker_bonus_score()
+	if bonus > 0:
+		score_lbl.text += tr("  |  Bonus: +%s") % _format_score(bonus)
 	if _mulligans_used > 0:
-		score_lbl.text += "  |  Undo: +%s" % _format_pours(_get_mulligan_pour_penalty())
+		score_lbl.text += tr("  |  Undo: +%s") % _format_pours(_get_mulligan_pour_penalty())
 	if _cheats_used > 0:
-		score_lbl.text += "  |  Cheat: +%s" % _format_pours(_get_cheat_pour_penalty())
+		score_lbl.text += tr("  |  Cheat: +%s") % _format_pours(_get_cheat_pour_penalty())
 	var star_row: HBoxContainer = get_node_or_null("VictoryOverlay/Card/Content/StarRow")
 	if star_row and not _victory_stars_shown:
 		_victory_stars_shown = true
@@ -826,7 +890,7 @@ func _check_for_no_moves():
 		return
 	if towers.check_complete() or bool(towers.call("has_available_moves")):
 		return
-	_show_loss("NO MOVES LEFT", "There are no legal pours remaining.", true)
+	_show_loss(tr("NO MOVES LEFT"), tr("There are no legal pours remaining."), true)
 
 func _show_loss(title: String, detail: String, allow_recovery_cheats: bool = false):
 	if get_node_or_null("VictoryOverlay") or get_node_or_null("LoseOverlay"):
@@ -857,13 +921,13 @@ func show_loss_screen(title: String, detail: String):
 
 	var card := ColorRect.new()
 	card.color = Color(0.08, 0.10, 0.18, 0.97)
-	card.custom_minimum_size = Vector2(620, 320)
+	card.custom_minimum_size = Vector2(680, 430)
 	card.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	card.offset_left   = -310.0
-	card.offset_top    = -160.0
-	card.offset_right  =  310.0
-	card.offset_bottom =  160.0
-	card.pivot_offset  = Vector2(310, 160)
+	card.offset_left   = -340.0
+	card.offset_top    = -215.0
+	card.offset_right  =  340.0
+	card.offset_bottom =  215.0
+	card.pivot_offset  = Vector2(340, 215)
 	card.scale         = Vector2(0.05, 0.05)
 	cl.add_child(card)
 
@@ -897,24 +961,24 @@ func show_loss_screen(title: String, detail: String):
 	var optimal := _get_optimal_pours()
 	if _score_forced_zero:
 		var goal_lbl := Label.new()
-		goal_lbl.text = "Score: %s" % _format_score(_get_score())
+		goal_lbl.text = tr("Score: %s") % _format_score(_get_score())
 		if optimal >= 0:
-			goal_lbl.text = "Goal: %d  |  Limit: %d  |  %s" % [optimal, _get_pour_limit(), goal_lbl.text]
+			goal_lbl.text = tr("Goal: %d  |  Limit: %d  |  %s") % [optimal, _get_pour_limit(), goal_lbl.text]
 		if _mulligans_used > 0:
-			goal_lbl.text += "  |  Undo: +%s" % _format_pours(_get_mulligan_pour_penalty())
+			goal_lbl.text += tr("  |  Undo: +%s") % _format_pours(_get_mulligan_pour_penalty())
 		if _cheats_used > 0:
-			goal_lbl.text += "  |  Cheat: +%s" % _format_pours(_get_cheat_pour_penalty())
+			goal_lbl.text += tr("  |  Cheat: +%s") % _format_pours(_get_cheat_pour_penalty())
 		goal_lbl.add_theme_font_size_override("font_size", 22)
 		goal_lbl.add_theme_color_override("font_color", Color(1.0, 0.86, 0.35))
 		goal_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		vb.add_child(goal_lbl)
 	elif optimal >= 0:
 		var goal_lbl := Label.new()
-		goal_lbl.text = "Goal: %d  |  Limit: %d  |  Score: %s" % [optimal, _get_pour_limit(), _format_score(_get_score())]
+		goal_lbl.text = tr("Goal: %d  |  Limit: %d  |  Score: %s") % [optimal, _get_pour_limit(), _format_score(_get_score())]
 		if _mulligans_used > 0:
-			goal_lbl.text += "  |  Undo: +%s" % _format_pours(_get_mulligan_pour_penalty())
+			goal_lbl.text += tr("  |  Undo: +%s") % _format_pours(_get_mulligan_pour_penalty())
 		if _cheats_used > 0:
-			goal_lbl.text += "  |  Cheat: +%s" % _format_pours(_get_cheat_pour_penalty())
+			goal_lbl.text += tr("  |  Cheat: +%s") % _format_pours(_get_cheat_pour_penalty())
 		goal_lbl.add_theme_font_size_override("font_size", 22)
 		goal_lbl.add_theme_color_override("font_color", Color(1.0, 0.86, 0.35))
 		goal_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -930,23 +994,12 @@ func show_loss_screen(title: String, detail: String):
 	hb.add_theme_constant_override("v_separation", 10)
 	vb.add_child(hb)
 
-	var retry_btn := Button.new()
-	retry_btn.text = "Retry"
-	retry_btn.add_theme_font_size_override("font_size", 22)
-	retry_btn.custom_minimum_size = Vector2(110, 50)
-	retry_btn.pressed.connect(retry_game)
-	hb.add_child(retry_btn)
-
-	var new_btn := Button.new()
-	new_btn.text = "New Puzzle"
-	new_btn.add_theme_font_size_override("font_size", 22)
-	new_btn.custom_minimum_size = Vector2(145, 50)
-	new_btn.pressed.connect(reset_game)
-	hb.add_child(new_btn)
+	_add_result_button(hb, tr("Retry"), 110.0, retry_game)
+	_add_result_button(hb, tr("New Puzzle"), 145.0, reset_game)
 
 	if _can_use_mulligan():
 		var mulligan_btn := Button.new()
-		mulligan_btn.text = "Undo +%s" % _format_pours(MULLIGAN_POUR_PENALTY)
+		mulligan_btn.text = tr("Undo +%s") % _format_pours(MULLIGAN_POUR_PENALTY)
 		mulligan_btn.add_theme_font_size_override("font_size", 22)
 		mulligan_btn.custom_minimum_size = Vector2(155, 50)
 		mulligan_btn.pressed.connect(use_mulligan)
@@ -955,30 +1008,54 @@ func show_loss_screen(title: String, detail: String):
 	if _can_use_recovery_cheat():
 		if towers.has_method("has_usable_stir_cheat") and bool(towers.call("has_usable_stir_cheat")):
 			var stir_btn := Button.new()
-			stir_btn.text = "Stir +%s" % _format_pours(CHEAT_POUR_PENALTY)
+			stir_btn.text = tr("Stir +%s") % _format_pours(CHEAT_POUR_PENALTY)
 			stir_btn.add_theme_font_size_override("font_size", 22)
 			stir_btn.custom_minimum_size = Vector2(130, 50)
 			stir_btn.pressed.connect(start_stir_cheat)
 			hb.add_child(stir_btn)
 		if towers.has_method("has_usable_swap_cheat") and bool(towers.call("has_usable_swap_cheat")):
 			var swap_btn := Button.new()
-			swap_btn.text = "Swap +%s" % _format_pours(CHEAT_POUR_PENALTY)
+			swap_btn.text = tr("Swap +%s") % _format_pours(CHEAT_POUR_PENALTY)
 			swap_btn.add_theme_font_size_override("font_size", 22)
 			swap_btn.custom_minimum_size = Vector2(135, 50)
 			swap_btn.pressed.connect(start_swap_cheat)
 			hb.add_child(swap_btn)
 
-	var menu_btn := Button.new()
-	menu_btn.text = "Menu"
-	menu_btn.add_theme_font_size_override("font_size", 22)
-	menu_btn.custom_minimum_size = Vector2(120, 50)
-	menu_btn.pressed.connect(go_to_menu)
-	hb.add_child(menu_btn)
+	_add_result_button(hb, tr("View Board"), 150.0, _return_to_board_from_result)
+	_add_result_button(hb, tr("Menu"), 120.0, go_to_menu)
 
 	var tw := create_tween().set_parallel()
 	tw.tween_property(bg,   "color", Color(0, 0, 0, 0.72), 0.35)
 	tw.tween_property(card, "scale", Vector2(1, 1),         0.50) \
 	  .set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+func _add_result_button(parent: Control, text: String, min_width: float, callback: Callable) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.add_theme_font_size_override("font_size", 22)
+	button.custom_minimum_size = Vector2(min_width, 50)
+	button.pressed.connect(callback)
+	parent.add_child(button)
+	return button
+
+func _return_to_board_from_result() -> void:
+	_clear_result_overlays()
+	if AudioManager:
+		AudioManager.play_click()
+
+func _on_disk_count_changed(value: float):
+	if not disk_count_slider:
+		return
+	var count := int(value)
+	if count == GameSettings.hanoi_disk_count:
+		return
+	GameSettings.set_hanoi_disk_count(count)
+	if disk_count_value:
+		disk_count_value.text = str(GameSettings.hanoi_disk_count)
+	if _settings_ready:
+		if AudioManager:
+			AudioManager.play_select()
+		reset_game(false)
 
 func _on_depth_changed(value: float):
 	if not depth_slider:
@@ -999,6 +1076,15 @@ func _on_show_goal_toggled(button_pressed: bool):
 	if _settings_ready and AudioManager:
 		AudioManager.play_select()
 	update_goal_label()
+
+func _on_special_beakers_toggled(button_pressed: bool) -> void:
+	if button_pressed == GameSettings.special_beakers_enabled:
+		return
+	GameSettings.set_special_beakers_enabled(button_pressed)
+	if _settings_ready:
+		if AudioManager:
+			AudioManager.play_select()
+		reset_game(false)
 
 func _on_palette_selected(index: int) -> void:
 	if not palette_option:
@@ -1025,16 +1111,20 @@ func _on_liquid_symbols_toggled(button_pressed: bool) -> void:
 		towers.queue_redraw()
 
 func _on_copy_board_code_pressed() -> void:
+	_copy_current_board_code(board_code_status, "Copied")
+
+func _copy_current_board_code(status_label: Label = null, copied_text: String = "Copied") -> bool:
 	if not towers or not towers.has_method("export_board_code"):
-		return
+		return false
 	var code := str(towers.call("export_board_code"))
 	if board_code_input:
 		board_code_input.text = code
 	DisplayServer.clipboard_set(code)
-	if board_code_status:
-		board_code_status.text = "Copied"
+	if status_label:
+		status_label.text = tr(copied_text)
 	if AudioManager:
 		AudioManager.play_select()
+	return true
 
 func _on_load_board_code_pressed() -> void:
 	if not towers or not towers.has_method("import_board_code"):
@@ -1045,7 +1135,7 @@ func _on_load_board_code_pressed() -> void:
 	var loaded := bool(towers.call("import_board_code", code))
 	if not loaded:
 		if board_code_status:
-			board_code_status.text = "Invalid board code"
+			board_code_status.text = tr("Invalid board code")
 		if AudioManager:
 			AudioManager.play_invalid()
 		return
@@ -1067,7 +1157,7 @@ func _on_load_board_code_pressed() -> void:
 	if board_code_input:
 		board_code_input.text = str(towers.call("export_board_code"))
 	if board_code_status:
-		board_code_status.text = "Loaded"
+		board_code_status.text = tr("Loaded")
 	if AudioManager:
 		AudioManager.play_select()
 	_check_for_no_moves.call_deferred()
@@ -1164,13 +1254,13 @@ func _set_cheat_status(cheat_type: String) -> void:
 	if not instructions_label:
 		return
 	if cheat_type == "stir":
-		instructions_label.text = "Recovery: choose one mixed beaker to stir."
+		instructions_label.text = tr("Recovery: choose one mixed beaker to stir.")
 	elif cheat_type == "swap":
-		instructions_label.text = "Recovery: choose two adjacent segments to swap."
+		instructions_label.text = tr("Recovery: choose two adjacent segments to swap.")
 
 func _restore_instruction_label() -> void:
 	if instructions_label and _default_instructions_text != "":
-		instructions_label.text = _default_instructions_text
+		instructions_label.text = tr(_default_instructions_text)
 
 func _on_cheat_applied(_cheat_type: String) -> void:
 	_cheats_used += 1
@@ -1209,7 +1299,7 @@ func _can_use_mulligan() -> bool:
 func _update_mulligan_button():
 	if not mulligan_button:
 		return
-	mulligan_button.text = "Undo +%s" % _format_pours(MULLIGAN_POUR_PENALTY)
+	mulligan_button.text = tr("Undo +%s") % _format_pours(MULLIGAN_POUR_PENALTY)
 	mulligan_button.disabled = not _can_use_mulligan()
 
 func use_mulligan():

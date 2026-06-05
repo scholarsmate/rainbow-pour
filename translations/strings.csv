@@ -1,0 +1,121 @@
+keys,en
+Settings,Settings
+Close,Close
+Puzzle,Puzzle
+Display,Display
+Audio,Audio
+Music,Music
+Effects,Effects
+Discs,Discs
+Slots,Slots
+Show optimal goal,Show optimal goal
+Bonus beakers,Bonus beakers
+Board code,Board code
+Copy,Copy
+Load,Load
+Palette,Palette
+Liquid opacity,Liquid opacity
+Show liquid symbols,Show liquid symbols
+Difficulty,Difficulty
+Easy,Easy
+Normal,Normal
+Hard,Hard
+Classic,Classic
+Colorblind,Colorblind
+High Contrast,High Contrast
+Moves,Moves
+Pours,Pours
+moves,moves
+pours,pours
+🎉  SOLVED!  🎉,🎉  SOLVED!  🎉
+Completed in %d %s,Completed in %d %s
+New Puzzle,New Puzzle
+Retry,Retry
+View Board,View Board
+Menu,Menu
+Possible moves: %d,Possible moves: %d
+Goal: finding optimal %s,Goal: finding optimal %s
+"Goal: finding optimal %s | %s","Goal: finding optimal %s | %s"
+Goal: exact solution not found,Goal: exact solution not found
+"Goal: %d | Limit: %d | Score: %s","Goal: %d | Limit: %d | Score: %s"
+"Goal: %d  |  Limit: %d  |  Score: %s","Goal: %d  |  Limit: %d  |  Score: %s"
+Score: finding optimal %s,Score: finding optimal %s
+Score: exact solution not found,Score: exact solution not found
+"Score: %s  |  Goal: %d  |  Extra: %s","Score: %s  |  Goal: %d  |  Extra: %s"
+"  |  Undo: +%s","  |  Undo: +%s"
+"  |  Cheat: +%s","  |  Cheat: +%s"
+"  |  Bonus: +%s","  |  Bonus: +%s"
+" | Undo: +%s"," | Undo: +%s"
+" | Cheat: +%s"," | Cheat: +%s"
+POUR LIMIT REACHED,POUR LIMIT REACHED
+STUCK IN A LOOP,STUCK IN A LOOP
+NO MOVES LEFT,NO MOVES LEFT
+You crossed the %d-%s limit.,You crossed the %d-%s limit.
+This board state repeated %d times.,This board state repeated %d times.
+There are no legal pours remaining.,There are no legal pours remaining.
+Score: %s,Score: %s
+"Goal: %d  |  Limit: %d  |  %s","Goal: %d  |  Limit: %d  |  %s"
+"Goal: %d  |  Limit: %d  |  Score: %s","Goal: %d  |  Limit: %d  |  Score: %s"
+Undo +%s,Undo +%s
+Stir +%s,Stir +%s
+Swap +%s,Swap +%s
+Recovery: choose one mixed beaker to stir.,Recovery: choose one mixed beaker to stir.
+Recovery: choose two adjacent segments to swap.,Recovery: choose two adjacent segments to swap.
+Copied,Copied
+Invalid board code,Invalid board code
+Loaded,Loaded
+Rainbow Hanoi,Rainbow Hanoi
+Choose a game mode,Choose a game mode
+Rainbow Pour,Rainbow Pour
+Board Builder,Board Builder
+Copy Code,Copy Code
+Play Board,Play Board
+Liquid,Liquid
+Beakers,Beakers
+Colors,Colors
+Empty,Empty
+Tool,Tool
+Paint,Paint
+Erase,Erase
+Type,Type
+Clear,Clear
+Random Fill,Random Fill
+Board complete. Finding optimal pours.,Board complete. Finding optimal pours.
+Board complete. Exact solution not found yet.,Board complete. Exact solution not found yet.
+Code ready with cached goal: %d pours.,Code ready with cached goal: %d pours.
+Place exactly %d segments of each color.,Place exactly %d segments of each color.
+Goal: place all pieces,Goal: place all pieces
+Goal: finding optimal,Goal: finding optimal
+Goal: %d pours,Goal: %d pours
+Goal: %s,Goal: %s
+Copied board code.,Copied board code.
+Prism,Prism
+Plain,Plain
+Tint %d,Tint %d
+"🗼 Rainbow Hanoi
+
+Move all disks
+onto the middle tower","🗼 Rainbow Hanoi
+
+Move all disks
+onto the middle tower"
+"🧪 Water Sort
+
+Sort all liquids
+into pure beakers","🧪 Water Sort
+
+Sort all liquids
+into pure beakers"
+"Board Builder
+
+Create a custom
+pour puzzle","Board Builder
+
+Create a custom
+pour puzzle"
+"Click a beaker to select it, then click another to pour.
+You can only pour if the top colors match (or destination is empty). Sort all colors to win!","Click a beaker to select it, then click another to pour.
+You can only pour if the top colors match (or destination is empty). Sort all colors to win!"
+"Click a tower to select it, then click another to move the top disk.
+Move all disks onto the middle tower to win!","Click a tower to select it, then click another to move the top disk.
+Move all disks onto the middle tower to win!"

@@ -60,8 +60,9 @@ offset_top = 8.0
 offset_right = 180.0
 offset_bottom = 44.0
 grow_horizontal = 2
+auto_translate_mode = 1
 theme_override_font_sizes/font_size = 28
-text = "Water Sort"
+text = "Rainbow Pour"
 horizontal_alignment = 1
 
 [node name="Instructions" type="Label" parent="UI"]
@@ -86,6 +87,7 @@ offset_left = 20.0
 offset_top = 20.0
 offset_right = 150.0
 offset_bottom = 60.0
+auto_translate_mode = 1
 theme_override_font_sizes/font_size = 20
 text = "Settings"
 
@@ -98,6 +100,7 @@ offset_top = 20.0
 offset_right = -360.0
 offset_bottom = 60.0
 grow_horizontal = 0
+auto_translate_mode = 1
 theme_override_font_sizes/font_size = 20
 text = "New Puzzle"
 
@@ -110,6 +113,7 @@ offset_top = 20.0
 offset_right = -250.0
 offset_bottom = 60.0
 grow_horizontal = 0
+auto_translate_mode = 1
 theme_override_font_sizes/font_size = 20
 text = "Retry"
 
@@ -135,6 +139,7 @@ offset_top = 20.0
 offset_right = -20.0
 offset_bottom = 60.0
 grow_horizontal = 0
+auto_translate_mode = 1
 theme_override_font_sizes/font_size = 20
 text = "Menu"
 

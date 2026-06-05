@@ -6,6 +6,7 @@
 [node name="Menu" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+auto_translate_mode = 1
 script = ExtResource("1_menu")
 
 [node name="Background" type="ColorRect" parent="."]
@@ -59,27 +60,34 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -320.0
+offset_left = -455.0
 offset_top = -110.0
-offset_right = 320.0
+offset_right = 455.0
 offset_bottom = 90.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 40
+theme_override_constants/separation = 28
 alignment = 1
 
 [node name="HanoiButton" type="Button" parent="Buttons"]
-custom_minimum_size = Vector2(280, 180)
+custom_minimum_size = Vector2(270, 180)
 theme_override_font_sizes/font_size = 22
 text = "🗼 Rainbow Hanoi\n\nMove all disks\nonto the middle tower"
 autowrap_mode = 3
 
 [node name="BeakerButton" type="Button" parent="Buttons"]
-custom_minimum_size = Vector2(280, 180)
+custom_minimum_size = Vector2(270, 180)
 theme_override_font_sizes/font_size = 22
 text = "🧪 Water Sort\n\nSort all liquids\ninto pure beakers"
+autowrap_mode = 3
+
+[node name="BuilderButton" type="Button" parent="Buttons"]
+custom_minimum_size = Vector2(270, 180)
+theme_override_font_sizes/font_size = 22
+text = "Board Builder\n\nCreate a custom\npour puzzle"
 autowrap_mode = 3
 
 
 [connection signal="pressed" from="Buttons/HanoiButton" to="." method="_on_hanoi_pressed"]
 [connection signal="pressed" from="Buttons/BeakerButton" to="." method="_on_beaker_pressed"]
+[connection signal="pressed" from="Buttons/BuilderButton" to="." method="_on_builder_pressed"]

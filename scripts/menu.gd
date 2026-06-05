@@ -3,6 +3,7 @@ extends Control
 @onready var settings_button = get_node_or_null("SettingsButton")
 
 var settings_overlay: Control
+var special_beakers_toggle: CheckButton
 var music_slider: HSlider
 var music_value: Label
 var effects_slider: HSlider
@@ -27,6 +28,11 @@ func _on_beaker_pressed():
 		AudioManager.play_click()
 	get_tree().change_scene_to_file("res://scenes/beaker.tscn")
 
+func _on_builder_pressed():
+	if AudioManager:
+		AudioManager.play_click()
+	get_tree().change_scene_to_file("res://scenes/board_builder.tscn")
+
 func _build_settings_dialog():
 	if not settings_button:
 		return
@@ -48,12 +54,12 @@ func _build_settings_dialog():
 
 	var card := ColorRect.new()
 	card.color = Color(0.075, 0.09, 0.14, 0.98)
-	card.custom_minimum_size = Vector2(520, 320)
+	card.custom_minimum_size = Vector2(520, 380)
 	card.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	card.offset_left = -260.0
-	card.offset_top = -160.0
+	card.offset_top = -190.0
 	card.offset_right = 260.0
-	card.offset_bottom = 160.0
+	card.offset_bottom = 190.0
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
 	settings_overlay.add_child(card)
 
@@ -77,21 +83,28 @@ func _build_settings_dialog():
 	content.add_child(header)
 
 	var title := Label.new()
-	title.text = "Settings"
+	title.text = tr("Settings")
 	title.add_theme_font_size_override("font_size", 34)
 	title.add_theme_color_override("font_color", Color(0.88, 0.94, 1.0))
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 
 	var close_btn := Button.new()
-	close_btn.text = "Close"
+	close_btn.text = tr("Close")
 	close_btn.custom_minimum_size = Vector2(92, 38)
 	close_btn.add_theme_font_size_override("font_size", 18)
 	close_btn.pressed.connect(_close_settings_dialog)
 	header.add_child(close_btn)
 
-	_add_section_label(content, "Audio")
-	var music_controls := _add_labeled_slider_row(content, "Music")
+	_add_section_label(content, tr("Puzzle"))
+	special_beakers_toggle = CheckButton.new()
+	special_beakers_toggle.text = tr("Bonus beakers")
+	special_beakers_toggle.add_theme_font_size_override("font_size", 18)
+	special_beakers_toggle.toggled.connect(_on_special_beakers_toggled)
+	content.add_child(special_beakers_toggle)
+
+	_add_section_label(content, tr("Audio"))
+	var music_controls := _add_labeled_slider_row(content, tr("Music"))
 	music_slider = music_controls["slider"] as HSlider
 	music_value = music_controls["value"] as Label
 	music_slider.min_value = 0.0
@@ -99,7 +112,7 @@ func _build_settings_dialog():
 	music_slider.step = 0.01
 	music_slider.value_changed.connect(_on_music_volume_changed)
 
-	var effects_controls := _add_labeled_slider_row(content, "Effects")
+	var effects_controls := _add_labeled_slider_row(content, tr("Effects"))
 	effects_slider = effects_controls["slider"] as HSlider
 	effects_value = effects_controls["value"] as Label
 	effects_slider.min_value = 0.0
@@ -145,6 +158,8 @@ func _add_labeled_slider_row(parent: Control, label_text: String) -> Dictionary:
 	return {"slider": slider, "value": value_label}
 
 func _sync_settings_ui():
+	if special_beakers_toggle:
+		special_beakers_toggle.button_pressed = GameSettings.special_beakers_enabled
 	if music_slider:
 		music_slider.value = GameSettings.music_volume
 	if music_value:
@@ -188,6 +203,13 @@ func _on_effects_volume_changed(value: float):
 	GameSettings.set_effects_volume(value)
 	if effects_value:
 		effects_value.text = _format_volume(GameSettings.effects_volume)
+	if AudioManager:
+		AudioManager.play_select()
+
+func _on_special_beakers_toggled(button_pressed: bool) -> void:
+	if button_pressed == GameSettings.special_beakers_enabled:
+		return
+	GameSettings.set_special_beakers_enabled(button_pressed)
 	if AudioManager:
 		AudioManager.play_select()
 
