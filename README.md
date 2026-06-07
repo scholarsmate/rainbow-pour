@@ -1,10 +1,10 @@
 # Rainbow Pour
 
-A colorful Godot 4.6 puzzle project with a Water Sort game mode and a classic Towers of Hanoi mode.
+A colorful Godot 4.6 pour puzzle project with a bonus Rainbow Hanoi side mode.
 
 ## About
 
-Water Sort includes adjustable beaker capacity, difficulty settings, scoring, mulligan undo, sound effects, loss conditions, and optimal-pour goal tracking.
+Rainbow Pour includes adjustable beaker capacity, difficulty settings, special beaker traits, scoring, mulligan undo, sound effects, loss conditions, and optimal-pour goal tracking.
 
 ## Getting Started
 
@@ -18,12 +18,12 @@ See [docs/ANDROID.md](docs/ANDROID.md) for building an APK and installing it on 
 
 ## How to Play
 
-Water Sort:
+Rainbow Pour:
 - Click a beaker to select it, then click another beaker to pour.
 - Pours are legal when the destination is empty or its top color matches.
-- Sort each color into its own beaker to win.
+- Sort each color into its own beaker to win. Cracked beakers must be empty at the end, and they shatter if filled with one color.
 
-Towers of Hanoi:
+Rainbow Hanoi:
 - Move disks from one tower to another.
 - Only one disk can be moved at a time.
 - A larger disk cannot be placed on top of a smaller disk.

@@ -6,7 +6,17 @@ const MUSIC_VOLUME_DB := -22.0
 const MUSIC_FADE_DB := -38.0
 const MUSIC_LOOP_BASE_SECONDS := 63.0
 const MUSIC_LOOP_LIMIT_SECONDS := 58.0
+const DISABLE_ANDROID_AUDIO := false
+const DISABLE_ANDROID_MUSIC := false
+const USE_IMPORTED_ANDROID_MUSIC := true
+const IMPORTED_GAME_MUSIC_PATH := "res://assets/audio/generated/game_loop.wav"
+const IMPORTED_MENU_MUSIC_PATH := "res://assets/audio/generated/menu_loop.wav"
+const IMPORTED_SOLVED_MUSIC_PATH := "res://assets/audio/generated/solved_loop.wav"
+const IMPORTED_FAILED_MUSIC_PATH := "res://assets/audio/generated/failed_loop.wav"
 
+var _audio_disabled := false
+var _music_disabled := false
+var _using_imported_music := false
 var _click: AudioStreamPlayer
 var _select: AudioStreamPlayer
 var _pour: AudioStreamPlayer
@@ -16,6 +26,7 @@ var _move: AudioStreamPlayer
 var _invalid: AudioStreamPlayer
 var _win: AudioStreamPlayer
 var _loss: AudioStreamPlayer
+var _spill: AudioStreamPlayer
 var _music: AudioStreamPlayer
 var _game_music_stream: AudioStream
 var _menu_music_stream: AudioStream
@@ -31,6 +42,12 @@ var _pour_stop_tween: Tween
 var _loop_pressure := 0.0
 
 func _ready():
+	_audio_disabled = DISABLE_ANDROID_AUDIO and OS.get_name() == "Android"
+	_music_disabled = DISABLE_ANDROID_MUSIC and OS.get_name() == "Android"
+	_using_imported_music = USE_IMPORTED_ANDROID_MUSIC and OS.get_name() == "Android"
+	if _audio_disabled:
+		print("Android audio disabled to avoid native AudioTrack crash.")
+		return
 	var headless := DisplayServer.get_name() == "headless"
 	_ensure_audio_bus(MUSIC_BUS)
 	_ensure_audio_bus(EFFECTS_BUS)
@@ -46,15 +63,22 @@ func _ready():
 	_invalid = _add(null if headless else _gen_tone(175.0, 0.14, 16.0, 0.65), -2.0, EFFECTS_BUS)
 	_win     = _add(null if headless else _gen_win(), -1.0, EFFECTS_BUS)
 	_loss    = _add(null if headless else _gen_glass_shatter(), -2.0, EFFECTS_BUS)
+	_spill   = _add(null if headless else _gen_liquid_spill(), -4.0, EFFECTS_BUS)
 	var star_boom_stream: AudioStream = null if headless else _gen_star_boom()
 	for i in 5:
 		_star_boom_players.append(_add(star_boom_stream, -0.8, EFFECTS_BUS))
 	if not headless:
-		_game_music_stream = _gen_music_loop()
-		_menu_music_stream = _gen_menu_music_loop()
-		_solved_music_stream = _gen_result_music_loop(true)
-		_failed_music_stream = _gen_result_music_loop(false)
-		_music = _add(_game_music_stream, MUSIC_VOLUME_DB, MUSIC_BUS)
+		if _using_imported_music:
+			_load_imported_music_streams()
+		elif not _music_disabled:
+			_game_music_stream = _gen_music_loop()
+			_menu_music_stream = _gen_menu_music_loop()
+			_solved_music_stream = _gen_result_music_loop(true)
+			_failed_music_stream = _gen_result_music_loop(false)
+		if not _music_disabled and _game_music_stream:
+			_music = _add(_game_music_stream, MUSIC_VOLUME_DB, MUSIC_BUS)
+	var music_mode := "disabled" if _music_disabled else ("imported" if _using_imported_music else "generated")
+	print("Audio enabled | music mode: %s | mix rate: %s | output latency: %.4f" % [music_mode, AudioServer.get_mix_rate(), AudioServer.get_output_latency()])
 	apply_volume_settings()
 	if _music:
 		play_game_music(0.0, false)
@@ -72,53 +96,128 @@ func _stop_all():
 			child.stop()
 			child.stream = null
 
-func play_click():   _click.play()
-func play_select():  _select.play()
+func play_click():
+	if _audio_disabled or not _click:
+		return
+	_click.play()
+
+func play_select():
+	if _audio_disabled or not _select:
+		return
+	_select.play()
+
 func play_pour():
+	if _audio_disabled:
+		return
 	if not _pour_streams.is_empty():
 		_play_sampled_pour()
+		return
+	if not _pour:
 		return
 	if _pour.playing:
 		_pour.stop()
 	_pour.play()
-func play_move():    _move.play()
-func play_invalid(): _invalid.play()
-func play_win():     _win.play()
-func play_loss():    _loss.play()
+
+func play_move():
+	if _audio_disabled or not _move:
+		return
+	_move.play()
+
+func play_invalid():
+	if _audio_disabled or not _invalid:
+		return
+	_invalid.play()
+
+func play_win():
+	if _audio_disabled or not _win:
+		return
+	_win.play()
+
+func play_loss():
+	if _audio_disabled or not _loss:
+		return
+	if _loss.playing:
+		_loss.stop()
+	_loss.pitch_scale = 1.0
+	_loss.play()
+
+func play_shatter():
+	if _audio_disabled or not _loss:
+		return
+	if _loss.playing:
+		_loss.stop()
+	_loss.pitch_scale = randf_range(0.96, 1.04)
+	_loss.play()
+
+func play_liquid_spill():
+	if _audio_disabled or not _spill:
+		return
+	if _spill.playing:
+		_spill.stop()
+	_spill.pitch_scale = randf_range(0.94, 1.06)
+	_spill.play()
+
 func play_star_boom(star_index: int = 0):
+	if _audio_disabled:
+		return
 	if _star_boom_players.is_empty():
 		return
 	var player := _star_boom_players[_star_boom_next]
 	_star_boom_next = (_star_boom_next + 1) % _star_boom_players.size()
+	var boom_step := minf(float(star_index), 4.0)
+	var final_boom := star_index >= 4
 	player.stop()
-	player.volume_db = -1.2 + minf(float(star_index), 4.0) * 0.28
-	player.pitch_scale = 0.90 + minf(float(star_index), 4.0) * 0.045 + randf_range(-0.018, 0.018)
+	player.volume_db = 3.8 if final_boom else -4.8 + boom_step * 1.15
+	player.pitch_scale = (0.82 if final_boom else 0.90 + boom_step * 0.045) + randf_range(-0.018, 0.018)
 	player.play()
+	if final_boom and _star_boom_players.size() > 1:
+		var sub_player := _star_boom_players[_star_boom_next]
+		_star_boom_next = (_star_boom_next + 1) % _star_boom_players.size()
+		sub_player.stop()
+		sub_player.volume_db = 0.6
+		sub_player.pitch_scale = 0.62 + randf_range(-0.012, 0.012)
+		sub_player.play()
 
 func apply_volume_settings() -> void:
+	if _audio_disabled:
+		return
 	set_music_volume(GameSettings.music_volume)
 	set_effects_volume(GameSettings.effects_volume)
 
 func set_music_volume(value: float) -> void:
+	if _audio_disabled:
+		return
 	_set_bus_volume(MUSIC_BUS, value)
 
 func set_effects_volume(value: float) -> void:
+	if _audio_disabled:
+		return
 	_set_bus_volume(EFFECTS_BUS, value)
 
 func play_game_music(progress: float = 0.0, fade: bool = true) -> void:
+	if _audio_disabled or _music_disabled:
+		return
 	_loop_pressure = clampf(progress, 0.0, 1.0)
 	_switch_music("game", _game_music_stream, _game_pitch_scale(), fade)
 
 func play_menu_music(fade: bool = true) -> void:
+	if _audio_disabled or _music_disabled:
+		return
 	_switch_music("menu", _menu_music_stream, 1.0, fade)
 
 func play_solved_music() -> void:
+	if _audio_disabled or _music_disabled:
+		return
 	_switch_music("solved", _solved_music_stream, 1.0, true)
 
 func play_failed_music() -> void:
+	if _audio_disabled or _music_disabled:
+		return
 	_switch_music("failed", _failed_music_stream, 1.0, true)
 
 func set_loop_pressure(progress: float) -> void:
+	if _audio_disabled or _music_disabled:
+		return
 	_loop_pressure = clampf(progress, 0.0, 1.0)
 	if not _music or _music_mode != "game":
 		return
@@ -129,6 +228,8 @@ func _game_pitch_scale() -> float:
 	return lerpf(1.0, MUSIC_LOOP_BASE_SECONDS / MUSIC_LOOP_LIMIT_SECONDS, eased)
 
 func _switch_music(mode: String, stream: AudioStream, pitch_scale: float, fade: bool) -> void:
+	if _audio_disabled or _music_disabled:
+		return
 	if not _music or not stream:
 		return
 	if _music_mode == mode:
@@ -171,10 +272,35 @@ func _ensure_audio_bus(bus_name: String) -> int:
 	return idx
 
 func _set_bus_volume(bus_name: String, value: float) -> void:
+	if _audio_disabled:
+		return
 	var idx := _ensure_audio_bus(bus_name)
 	var clamped := clampf(value, 0.0, 1.0)
 	AudioServer.set_bus_mute(idx, clamped <= 0.001)
 	AudioServer.set_bus_volume_db(idx, -80.0 if clamped <= 0.001 else linear_to_db(clamped))
+
+func _load_imported_music_streams() -> void:
+	_game_music_stream = _load_imported_music_stream(IMPORTED_GAME_MUSIC_PATH)
+	_menu_music_stream = _load_imported_music_stream(IMPORTED_MENU_MUSIC_PATH)
+	_solved_music_stream = _load_imported_music_stream(IMPORTED_SOLVED_MUSIC_PATH)
+	_failed_music_stream = _load_imported_music_stream(IMPORTED_FAILED_MUSIC_PATH)
+	if not _game_music_stream or not _menu_music_stream or not _solved_music_stream or not _failed_music_stream:
+		_music_disabled = true
+		_using_imported_music = false
+		print("Imported Android music missing; keeping sound effects enabled and music disabled.")
+
+func _load_imported_music_stream(path: String) -> AudioStream:
+	var stream := load(path) as AudioStream
+	if stream == null:
+		push_warning("Missing imported music stream: %s" % path)
+		return null
+	if stream is AudioStreamWAV:
+		var wav := stream as AudioStreamWAV
+		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		wav.loop_begin = 0
+		var loop_end := int(round(wav.get_length() * float(wav.mix_rate)))
+		wav.loop_end = loop_end if loop_end > 0 else -1
+	return stream
 
 func _load_pour_assets() -> void:
 	_pour_streams = _load_audio_streams([
@@ -197,6 +323,8 @@ func _load_audio_streams(paths: Array) -> Array[AudioStream]:
 	return streams
 
 func _play_sampled_pour() -> void:
+	if _audio_disabled:
+		return
 	if _pour_stop_tween and _pour_stop_tween.is_valid():
 		_pour_stop_tween.kill()
 
@@ -294,6 +422,42 @@ func _gen_pour() -> AudioStreamWAV:
 		b.encode_s16(i * 2, clampi(v, -32768, 32767))
 	return _wav(b)
 
+func _gen_liquid_spill() -> AudioStreamWAV:
+	var rate := 22050
+	var dur := 1.05
+	var n := int(rate * dur)
+	var b := PackedByteArray(); b.resize(n * 2)
+	var stream := 0.0
+	var splats := [
+		[0.05, 0.18],
+		[0.16, 0.13],
+		[0.31, 0.11],
+		[0.49, 0.08],
+	]
+	for i in n:
+		var t := float(i) / rate
+		var attack := minf(1.0, t / 0.035)
+		var tail := minf(1.0, (dur - t) / 0.30)
+		var env := attack * tail * exp(-t * 0.75)
+		var white := randf_range(-1.0, 1.0)
+		stream = lerpf(stream, white, 0.10)
+		var hiss := white - stream
+		var low_slosh := sin(TAU * (64.0 + sin(t * 19.0) * 16.0) * t) * 0.055
+		var sample := (stream * 0.42 + hiss * 0.052 + low_slosh) * env
+		for splat in splats:
+			var start := float(splat[0])
+			if t < start:
+				continue
+			var local_t := t - start
+			if local_t > 0.18:
+				continue
+			var amp := float(splat[1])
+			sample += randf_range(-1.0, 1.0) * exp(-local_t * 23.0) * amp
+			sample += sin(TAU * 105.0 * local_t) * exp(-local_t * 12.0) * amp * 0.45
+		var v := int(sample * 32767.0)
+		b.encode_s16(i * 2, clampi(v, -32768, 32767))
+	return _wav(b)
+
 func _gen_win() -> AudioStreamWAV:
 	var rate := 22050
 	var notes := [523.25, 659.25, 783.99, 1046.50]  # C5 E5 G5 C6
@@ -380,11 +544,11 @@ func _music_kick(hit_t: float, amp: float = 1.0) -> float:
 	return (sub + low + knock + click) * amp
 
 func _music_snare(hit_t: float, amp: float = 1.0) -> float:
-	var snap := randf_range(-1.0, 1.0) * exp(-hit_t * 58.0) * 0.070
-	var wash := randf_range(-1.0, 1.0) * exp(-hit_t * 19.0) * 0.055
-	var body := sin(TAU * 178.0 * hit_t) * exp(-hit_t * 18.0) * 0.046
-	var ring := sin(TAU * 348.0 * hit_t) * exp(-hit_t * 24.0) * 0.018
-	return (snap + wash + body + ring) * amp
+	var snap := randf_range(-1.0, 1.0) * exp(-hit_t * 64.0) * 0.034
+	var brush := randf_range(-1.0, 1.0) * exp(-hit_t * 25.0) * 0.026
+	var tick := sin(TAU * 720.0 * hit_t) * exp(-hit_t * 36.0) * 0.018
+	var air := sin(TAU * 1350.0 * hit_t) * exp(-hit_t * 52.0) * 0.006
+	return (snap + brush + tick + air) * amp
 
 func _loop_hz(hz: float, dur: float) -> float:
 	return round(hz * dur) / dur
@@ -437,9 +601,9 @@ func _gen_music_loop() -> AudioStreamWAV:
 	], dur)
 	var chord_step := dur / float(chords.size())
 	var kick_hits := [0.0, chord_step * 0.25, chord_step * 0.4375, chord_step * 0.625, chord_step * 0.75]
-	var kick_amps := [1.08, 0.76, 0.60, 0.94, 0.52]
+	var kick_amps := [1.34, 0.94, 0.74, 1.16, 0.64]
 	var snare_hits := [chord_step * 0.1875, chord_step * 0.375, chord_step * 0.5625, chord_step * 0.84375]
-	var snare_amps := [0.44, 0.86, 0.38, 0.66]
+	var snare_amps := [0.26, 0.48, 0.22, 0.36]
 	var low_hz := _loop_hz(110.0, dur)
 	for i in n:
 		var t := float(i) / rate
@@ -454,11 +618,11 @@ func _gen_music_loop() -> AudioStreamWAV:
 		var ripple_t := fmod(t, 0.5)
 		var ripple_idx := int(t * 2.0) % ripples.size()
 		var ripple_hz: float = ripples[ripple_idx]
-		var ripple_amp := 0.058 + 0.014 * sin(TAU * (float(ripple_idx) / float(ripples.size())))
+		var ripple_amp := 0.035 + 0.008 * sin(TAU * (float(ripple_idx) / float(ripples.size())))
 		sample += sin(TAU * ripple_hz * t) * exp(-ripple_t * 8.0) * ripple_amp
 		if int(t * 2.0) % 16 == 7:
 			var echo_t := fmod(t + 0.18, 0.5)
-			sample += sin(TAU * ripple_hz * 0.5 * t) * exp(-echo_t * 7.0) * 0.026
+			sample += sin(TAU * ripple_hz * 0.5 * t) * exp(-echo_t * 7.0) * 0.014
 		sample += sin(TAU * low_hz * t + sin(TAU * 8.0 * t / dur) * 0.18) * 0.036
 		var pattern_t := fmod(t, chord_step)
 		for hit_idx in kick_hits.size():

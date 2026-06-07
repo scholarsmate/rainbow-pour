@@ -67,9 +67,20 @@ In `Project > Export`:
 3. Set the app name/package fields. A good development package name is `com.schol.rainbowpour`.
 4. For phone testing, export format can be `APK`.
 5. Keep debug export enabled for early device testing.
-6. Export to a local `builds/` or `exports/` folder.
+6. Under `Options > Screen`, set `Orientation` to `Sensor` so the APK can rotate between landscape and portrait.
+7. Export to a local `builds/` or `exports/` folder.
 
 `export_presets.cfg` is ignored by git in this repo because Android export presets can contain keystore paths and passwords. Keep signing credentials local.
+
+## Versioning
+
+`VERSION.txt` in the repo root is the source of truth for the app version. Before exporting, sync the Godot project metadata and local Android preset from that file:
+
+```powershell
+.\tools\sync_version.ps1
+```
+
+The main menu reads `VERSION.txt` directly, so the displayed version stays tied to the same source.
 
 ## Put It On The Phone
 
@@ -88,6 +99,22 @@ From PowerShell:
 ```
 
 If the device is listed as `unauthorized`, unlock the phone and accept the USB debugging prompt.
+
+## Capture A Crash Log
+
+For random crashes, capture logcat while the game is running:
+
+```powershell
+.\tools\capture_android_log.ps1 -Launch
+```
+
+Play until the app crashes, then press `Ctrl+C` in PowerShell. The script writes a full log and a focused log under `logs/android/`. The focused log keeps the app package, Godot, Android runtime, native signal, low-memory, and ANR lines.
+
+To snapshot the current device log without launching the app:
+
+```powershell
+.\tools\capture_android_log.ps1 -Snapshot -NoClear
+```
 
 ## Play Store Builds Later
 

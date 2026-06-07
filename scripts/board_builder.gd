@@ -4,6 +4,7 @@ const BoardCodeCodec = preload("res://scripts/board_code.gd")
 const TRAIT_NONE := ""
 const TRAIT_PRISMATIC := "prismatic"
 const TRAIT_TINTED := "tinted"
+const TRAIT_CRACKED := "cracked"
 const TOOL_PAINT := 0
 const TOOL_ERASE := 1
 const OPTIMAL_SOLVER_CALCULATING := -2
@@ -312,11 +313,11 @@ func _add_beaker_type_row(parent: Control) -> void:
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(label)
 
-	for trait_type in [TRAIT_NONE, TRAIT_PRISMATIC, TRAIT_TINTED]:
+	for trait_type in [TRAIT_NONE, TRAIT_PRISMATIC, TRAIT_TINTED, TRAIT_CRACKED]:
 		var button := Button.new()
 		button.toggle_mode = true
-		button.custom_minimum_size = Vector2(68, 34)
-		button.add_theme_font_size_override("font_size", 13)
+		button.custom_minimum_size = Vector2(58, 34)
+		button.add_theme_font_size_override("font_size", 12)
 		button.pressed.connect(_select_trait_type.bind(trait_type))
 		row.add_child(button)
 		trait_type_buttons[trait_type] = button
@@ -333,6 +334,12 @@ func _setup_solver_preview() -> void:
 		solver_node.connect("solver_progress", Callable(self, "_on_solver_progress"))
 
 func _apply_counts_from_difficulty() -> void:
+	if difficulty_key == "custom":
+		filled_beakers = GameSettings.get_filled_beaker_count()
+		empty_beakers = GameSettings.get_empty_beaker_count()
+		beaker_count = filled_beakers + empty_beakers
+		selected_color = clampi(selected_color, 0, maxi(0, filled_beakers - 1))
+		return
 	var data: Dictionary = GameSettings.DIFFICULTIES[difficulty_key]
 	filled_beakers = int(data["filled_beakers"])
 	empty_beakers = int(data["empty_beakers"])
@@ -482,6 +489,10 @@ func _refresh_trait_type_buttons() -> void:
 			fill = Color(base.r, base.g, base.b, 0.72)
 			border = Color(1.0, 1.0, 1.0, 0.42)
 			font_color = _ink_for_color(base)
+		elif trait_type == TRAIT_CRACKED:
+			fill = Color(0.18, 0.08, 0.07, 0.95)
+			border = Color(1.0, 0.34, 0.24, 0.62)
+			font_color = Color(1.0, 0.90, 0.84)
 		if str(trait_type) == selected_trait_type:
 			border = Color(0.92, 0.96, 1.0, 0.96)
 		_apply_button_style(button, fill, border, font_color)
@@ -518,6 +529,9 @@ func _refresh_trait_button(beaker_idx: int) -> void:
 		var base := _get_liquid_color(color_idx)
 		button.text = _get_trait_button_label(TRAIT_TINTED, color_idx)
 		_apply_button_style(button, Color(base.r, base.g, base.b, 0.72), Color(1.0, 1.0, 1.0, 0.70), _ink_for_color(base))
+	elif trait_type == TRAIT_CRACKED:
+		button.text = _get_trait_button_label(TRAIT_CRACKED)
+		_apply_button_style(button, Color(0.18, 0.08, 0.07, 0.95), Color(1.0, 0.34, 0.24, 0.86), Color(1.0, 0.90, 0.84))
 	else:
 		button.text = _get_trait_button_label(TRAIT_NONE)
 		_apply_button_style(button, Color(0.08, 0.10, 0.15, 0.95), Color(0.62, 0.80, 1.0, 0.34), Color(0.82, 0.88, 0.96))
@@ -535,16 +549,19 @@ func _refresh_status(valid: bool) -> void:
 	]
 	if valid:
 		if solver_result == OPTIMAL_SOLVER_CALCULATING:
-			status_label.text = tr("Board complete. Finding optimal pours.")
+			status_label.text = tr("Solving goal...")
 			status_label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.35))
 		elif solver_result < 0:
-			status_label.text = tr("Board complete. Exact solution not found yet.")
+			status_label.text = tr("Goal not found.")
 			status_label.add_theme_color_override("font_color", Color(1.0, 0.74, 0.30))
 		else:
-			status_label.text = tr("Code ready with cached goal: %d pours.") % solver_result
+			status_label.text = tr("Code ready: %d pours.") % solver_result
 			status_label.add_theme_color_override("font_color", Color(0.58, 0.94, 1.0))
 	else:
-		status_label.text = tr("Place exactly %d segments of each color.") % capacity
+		if not _has_valid_color_counts():
+			status_label.text = tr("Use %d of each color.") % capacity
+		elif _has_cracked_shatter_setup():
+			status_label.text = tr("No full one-color cracked beakers.")
 		status_label.add_theme_color_override("font_color", Color(1.0, 0.74, 0.30))
 
 func _update_solver_preview(valid: bool, code: String) -> void:
@@ -555,20 +572,21 @@ func _update_solver_preview(valid: bool, code: String) -> void:
 		solver_result = -1
 		solver_progress_text = ""
 		solver_node.set("_solver_active", false)
-		solver_label.text = tr("Goal: place all pieces")
+		solver_label.text = tr("Place pieces")
 		return
 	if code == solver_code:
 		return
 	solver_code = code
 	solver_result = OPTIMAL_SOLVER_CALCULATING
 	solver_progress_text = ""
-	solver_label.text = tr("Goal: finding optimal")
+	solver_label.text = tr("Finding goal")
 	solver_node.set("beaker_capacity", capacity)
 	solver_node.set("filled_beakers", filled_beakers)
 	solver_node.set("empty_beakers", empty_beakers)
 	solver_node.set("beaker_count", beaker_count)
 	solver_node.set("beakers_per_row", _get_board_grid_columns())
 	solver_node.set("beakers", _copy_beakers(beakers))
+	solver_node.set("beaker_traits", _get_solver_traits())
 	solver_node.call("_start_optimal_solver", _copy_beakers(beakers))
 
 func _on_solver_goal_changed(optimal_pours: int) -> void:
@@ -580,9 +598,9 @@ func _on_solver_goal_changed(optimal_pours: int) -> void:
 	if optimal_pours == OPTIMAL_SOLVER_CALCULATING:
 		_refresh_solver_progress_label()
 	elif optimal_pours < 0:
-		solver_label.text = tr("Goal: exact solution not found")
+		solver_label.text = tr("Goal not found")
 	else:
-		solver_label.text = tr("Goal: %d pours") % optimal_pours
+		solver_label.text = tr("%d pours") % optimal_pours
 	_refresh_code_status_and_actions(_is_board_valid())
 
 func _on_solver_progress(searched: int, frontier: int, depth: int, limit: int) -> void:
@@ -598,9 +616,9 @@ func _on_solver_progress(searched: int, frontier: int, depth: int, limit: int) -
 
 func _refresh_solver_progress_label() -> void:
 	if solver_progress_text == "":
-		solver_label.text = tr("Goal: finding optimal")
+		solver_label.text = tr("Finding goal")
 	else:
-		solver_label.text = tr("Goal: %s") % solver_progress_text
+		solver_label.text = solver_progress_text
 
 func _on_total_count_selected(index: int) -> void:
 	if not total_option:
@@ -656,7 +674,7 @@ func _select_color(color_idx: int) -> void:
 		AudioManager.play_select()
 
 func _select_trait_type(trait_type: String) -> void:
-	if not [TRAIT_NONE, TRAIT_PRISMATIC, TRAIT_TINTED].has(trait_type):
+	if not [TRAIT_NONE, TRAIT_PRISMATIC, TRAIT_TINTED, TRAIT_CRACKED].has(trait_type):
 		return
 	selected_trait_type = trait_type
 	_refresh_trait_type_buttons()
@@ -707,6 +725,13 @@ func _on_clear_pressed() -> void:
 		AudioManager.play_click()
 
 func _on_random_fill_pressed() -> void:
+	_random_fill_board_once()
+	_repair_completed_beakers()
+	_refresh_all()
+	if AudioManager:
+		AudioManager.play_click()
+
+func _random_fill_board_once() -> void:
 	var pool := []
 	for color_idx in filled_beakers:
 		for slot in capacity:
@@ -717,9 +742,34 @@ func _on_random_fill_pressed() -> void:
 	for idx in pool.size():
 		var beaker_idx := int(idx / capacity)
 		beakers[beaker_idx].append(pool[idx])
-	_refresh_all()
-	if AudioManager:
-		AudioManager.play_click()
+
+func _repair_completed_beakers() -> void:
+	if filled_beakers <= 1:
+		return
+	for idx in filled_beakers:
+		if idx >= beakers.size() or not _is_tube_complete(beakers[idx]):
+			continue
+		_mix_completed_beaker_with_next(idx)
+
+func _mix_completed_beaker_with_next(idx: int) -> void:
+	var src: Array = beakers[idx]
+	if src.is_empty():
+		return
+	for offset in range(1, filled_beakers):
+		var dst_idx := (idx + offset) % filled_beakers
+		if dst_idx >= beakers.size():
+			continue
+		var dst: Array = beakers[dst_idx]
+		if dst.is_empty():
+			continue
+		for src_segment in src.size():
+			for dst_segment in dst.size():
+				if src[src_segment] == dst[dst_segment]:
+					continue
+				var tmp = src[src_segment]
+				src[src_segment] = dst[dst_segment]
+				dst[dst_segment] = tmp
+				return
 
 func _on_copy_pressed() -> void:
 	if not _is_board_valid() or solver_result < 0:
@@ -750,9 +800,36 @@ func _on_menu_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/menu.tscn")
 
 func _is_board_valid() -> bool:
+	return _has_valid_color_counts() and not _has_cracked_shatter_setup()
+
+func _has_valid_color_counts() -> bool:
 	var counts := _get_color_counts()
 	for color_idx in filled_beakers:
 		if int(counts[color_idx]) != capacity:
+			return false
+	return true
+
+func _has_cracked_shatter_setup() -> bool:
+	for idx in beaker_count:
+		if idx >= beaker_traits.size() or idx >= beakers.size():
+			continue
+		var trait_data: Dictionary = beaker_traits[idx]
+		if str(trait_data.get("type", TRAIT_NONE)) == TRAIT_CRACKED and _is_tube_complete(beakers[idx]):
+			return true
+	return false
+
+func _has_completed_beaker() -> bool:
+	for tube in beakers:
+		if _is_tube_complete(tube):
+			return true
+	return false
+
+func _is_tube_complete(tube: Array) -> bool:
+	if tube.size() != capacity:
+		return false
+	var first = tube[0]
+	for color in tube:
+		if color != first:
 			return false
 	return true
 
@@ -791,10 +868,17 @@ func _export_board_code(include_cached_goal: bool = true) -> String:
 	return BoardCodeCodec.encode(capacity, filled_beakers, empty_beakers, beakers, beaker_traits, cached_goal)
 
 func _get_solver_signature() -> String:
-	var plain_traits := []
+	return BoardCodeCodec.encode(capacity, filled_beakers, empty_beakers, beakers, _get_solver_traits(), -1)
+
+func _get_solver_traits() -> Array:
+	var solver_traits := []
 	for idx in beaker_count:
-		plain_traits.append(_make_trait())
-	return BoardCodeCodec.encode(capacity, filled_beakers, empty_beakers, beakers, plain_traits, -1)
+		var trait_data: Dictionary = beaker_traits[idx] if idx < beaker_traits.size() else _make_trait()
+		if str(trait_data.get("type", TRAIT_NONE)) == TRAIT_CRACKED:
+			solver_traits.append(_make_trait(TRAIT_CRACKED))
+		else:
+			solver_traits.append(_make_trait())
+	return solver_traits
 
 func _get_board_grid_columns() -> int:
 	if beaker_count <= 0:
@@ -812,6 +896,8 @@ func _get_trait_button_label(trait_type: String, color_idx: int = -1) -> String:
 	if trait_type == TRAIT_TINTED:
 		var tint_color := selected_color if color_idx < 0 else color_idx
 		return tr("Tint %d") % (tint_color + 1)
+	if trait_type == TRAIT_CRACKED:
+		return tr("Crack")
 	return tr("Plain")
 
 func _format_solver_count(value: int) -> String:

@@ -5,6 +5,7 @@ const BASE85_ALPHABET := "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQR
 const TRAIT_NONE := ""
 const TRAIT_PRISMATIC := "prismatic"
 const TRAIT_TINTED := "tinted"
+const TRAIT_CRACKED := "cracked"
 const COUNT_BITS := 4
 const MAX_COUNT := (1 << COUNT_BITS) - 1
 const MAX_TOTAL_BEAKERS := 16
@@ -93,6 +94,8 @@ static func encode(capacity: int, filled_count: int, empty_count: int, beakers: 
 			TRAIT_TINTED:
 				writer.write_bits(2, 2)
 				writer.write_bits(int(trait_data.get("color", 0)), color_bits)
+			TRAIT_CRACKED:
+				writer.write_bits(3, 2)
 			_:
 				writer.write_bits(0, 2)
 
@@ -160,10 +163,10 @@ static func _decode_v1(code: String) -> Dictionary:
 			if reader.failed or color_idx < 0 or color_idx >= filled_count:
 				return {"ok": false}
 			traits.append({"type": TRAIT_TINTED, "color": color_idx})
+		elif trait_type == 3:
+			traits.append({"type": TRAIT_CRACKED, "color": -1})
 		elif trait_type == 0:
 			traits.append({"type": TRAIT_NONE, "color": -1})
-		else:
-			return {"ok": false}
 
 	return {
 		"ok": true,

@@ -12,29 +12,29 @@ const LIQUID_ALPHA_MIN := 0.35
 const LIQUID_ALPHA_MAX := 1.0
 const LIQUID_ALPHA_DEFAULT := 0.86
 const LIQUID_PALETTE_DEFAULT := "classic"
+const LIQUID_SYMBOL_SET_DEFAULT := "alphanumeric"
 
 const LIQUID_PALETTE_ORDER := ["classic", "colorblind", "high_contrast"]
 const LIQUID_PALETTES := {
 	"classic": {
 		"label": "Classic",
 		"colors": [
-			Color(0.95, 0.18, 0.18),
-			Color(1.00, 0.52, 0.04),
-			Color(0.94, 0.82, 0.04),
-			Color(0.58, 0.92, 0.04),
-			Color(0.06, 0.84, 0.30),
-			Color(0.00, 0.78, 0.72),
-			Color(0.15, 0.50, 1.00),
-			Color(0.33, 0.26, 1.00),
-			Color(0.72, 0.18, 0.98),
-			Color(0.07, 0.74, 0.86),
-			Color(1.00, 0.27, 0.58),
-			Color(0.98, 0.48, 0.18),
-			Color(0.56, 0.34, 0.16),
-			Color(0.80, 0.88, 1.00),
-			Color(0.08, 0.18, 0.28),
-			Color(0.93, 0.93, 0.93),
-			Color(0.42, 0.48, 0.55),
+			Color(0.902, 0.098, 0.294),
+			Color(0.235, 0.706, 0.294),
+			Color(1.000, 0.882, 0.098),
+			Color(0.263, 0.388, 0.847),
+			Color(0.961, 0.510, 0.192),
+			Color(0.569, 0.118, 0.706),
+			Color(0.275, 0.941, 0.941),
+			Color(0.941, 0.196, 0.902),
+			Color(0.737, 0.965, 0.047),
+			Color(0.980, 0.745, 0.745),
+			Color(0.000, 0.502, 0.502),
+			Color(0.902, 0.745, 1.000),
+			Color(0.604, 0.388, 0.141),
+			Color(1.000, 0.980, 0.784),
+			Color(0.502, 0.000, 0.000),
+			Color(0.663, 0.663, 0.663),
 		],
 	},
 	"colorblind": {
@@ -80,7 +80,17 @@ const LIQUID_PALETTES := {
 		],
 	},
 }
-const LIQUID_SYMBOLS := ["1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G"]
+const LIQUID_SYMBOL_SET_ORDER := ["alphanumeric", "glyphs"]
+const LIQUID_SYMBOL_SETS := {
+	"alphanumeric": {
+		"label": "Letters",
+		"symbols": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P"],
+	},
+	"glyphs": {
+		"label": "Glyphs",
+		"symbols": ["●", "■", "▲", "◆", "★", "✚", "✦", "☾", "☀", "♣", "♥", "♠", "⬟", "⬢", "✿", "☂"],
+	},
+}
 
 const DIFFICULTIES := {
 	"easy": {
@@ -98,15 +108,23 @@ const DIFFICULTIES := {
 		"filled_beakers": 8,
 		"empty_beakers": 2,
 	},
+	"custom": {
+		"label": "Custom",
+		"filled_beakers": 6,
+		"empty_beakers": 2,
+	},
 }
 
 var beaker_capacity: int = 4
+var filled_beakers: int = 6
+var empty_beakers: int = 2
 var hanoi_disk_count: int = 5
 var difficulty: String = "normal"
 var show_goal_hint: bool = true
 var special_beakers_enabled: bool = true
 var liquid_alpha: float = LIQUID_ALPHA_DEFAULT
 var liquid_palette: String = LIQUID_PALETTE_DEFAULT
+var liquid_symbol_set: String = LIQUID_SYMBOL_SET_DEFAULT
 var show_liquid_symbols: bool = true
 var music_volume: float = MUSIC_VOLUME_DEFAULT
 var effects_volume: float = EFFECTS_VOLUME_DEFAULT
@@ -127,7 +145,17 @@ func set_hanoi_disk_count(value: int) -> void:
 func set_difficulty(value: String) -> void:
 	if DIFFICULTIES.has(value):
 		difficulty = value
+		if value != "custom":
+			filled_beakers = int(DIFFICULTIES[value]["filled_beakers"])
+			empty_beakers = int(DIFFICULTIES[value]["empty_beakers"])
 		save_settings()
+
+func set_beaker_counts(filled_count: int, empty_count: int) -> void:
+	filled_beakers = clampi(filled_count, 1, MAX_BEAKERS - 1)
+	empty_beakers = clampi(empty_count, 1, MAX_BEAKERS - filled_beakers)
+	var matching := find_difficulty_for_counts(filled_beakers, empty_beakers)
+	difficulty = matching if matching != "" else "custom"
+	save_settings()
 
 func set_show_goal_hint(value: bool) -> void:
 	show_goal_hint = value
@@ -144,6 +172,11 @@ func set_liquid_alpha(value: float) -> void:
 func set_liquid_palette(value: String) -> void:
 	if LIQUID_PALETTES.has(value):
 		liquid_palette = value
+		save_settings()
+
+func set_liquid_symbol_set(value: String) -> void:
+	if LIQUID_SYMBOL_SETS.has(value):
+		liquid_symbol_set = value
 		save_settings()
 
 func set_show_liquid_symbols(value: bool) -> void:
@@ -172,10 +205,10 @@ func get_difficulty_label() -> String:
 	return tr(str(DIFFICULTIES[difficulty]["label"]))
 
 func get_filled_beaker_count() -> int:
-	return int(DIFFICULTIES[difficulty]["filled_beakers"])
+	return filled_beakers
 
 func get_empty_beaker_count() -> int:
-	return int(DIFFICULTIES[difficulty]["empty_beakers"])
+	return empty_beakers
 
 func get_beaker_count() -> int:
 	return get_filled_beaker_count() + get_empty_beaker_count()
@@ -185,12 +218,18 @@ func get_liquid_colors() -> Array:
 	return LIQUID_PALETTES[palette_key]["colors"]
 
 func get_liquid_symbols() -> Array:
-	return LIQUID_SYMBOLS
+	var symbol_key := liquid_symbol_set if LIQUID_SYMBOL_SETS.has(liquid_symbol_set) else LIQUID_SYMBOL_SET_DEFAULT
+	return LIQUID_SYMBOL_SETS[symbol_key]["symbols"]
 
 func get_liquid_palette_label(key: String) -> String:
 	if not LIQUID_PALETTES.has(key):
 		return tr(key.capitalize())
 	return tr(str(LIQUID_PALETTES[key]["label"]))
+
+func get_liquid_symbol_set_label(key: String) -> String:
+	if not LIQUID_SYMBOL_SETS.has(key):
+		return tr(key.capitalize())
+	return tr(str(LIQUID_SYMBOL_SETS[key]["label"]))
 
 func find_difficulty_for_counts(filled_count: int, empty_count: int) -> String:
 	for key in DIFFICULTIES:
@@ -208,12 +247,20 @@ func load_settings() -> void:
 	var saved_difficulty := str(cfg.get_value("game", "difficulty", difficulty))
 	if DIFFICULTIES.has(saved_difficulty):
 		difficulty = saved_difficulty
+	var default_counts: Dictionary = DIFFICULTIES[difficulty] if difficulty != "custom" else DIFFICULTIES["normal"]
+	filled_beakers = clampi(int(cfg.get_value("game", "filled_beakers", int(default_counts["filled_beakers"]))), 1, MAX_BEAKERS - 1)
+	empty_beakers = clampi(int(cfg.get_value("game", "empty_beakers", int(default_counts["empty_beakers"]))), 1, MAX_BEAKERS - filled_beakers)
+	var matching := find_difficulty_for_counts(filled_beakers, empty_beakers)
+	difficulty = matching if matching != "" else "custom"
 	show_goal_hint = bool(cfg.get_value("game", "show_goal_hint", show_goal_hint))
 	special_beakers_enabled = bool(cfg.get_value("game", "special_beakers_enabled", special_beakers_enabled))
 	liquid_alpha = clampf(float(cfg.get_value("display", "liquid_alpha", liquid_alpha)), LIQUID_ALPHA_MIN, LIQUID_ALPHA_MAX)
 	var saved_palette := str(cfg.get_value("display", "liquid_palette", liquid_palette))
 	if LIQUID_PALETTES.has(saved_palette):
 		liquid_palette = saved_palette
+	var saved_symbol_set := str(cfg.get_value("display", "liquid_symbol_set", liquid_symbol_set))
+	if LIQUID_SYMBOL_SETS.has(saved_symbol_set):
+		liquid_symbol_set = saved_symbol_set
 	show_liquid_symbols = bool(cfg.get_value("display", "show_liquid_symbols", show_liquid_symbols))
 	music_volume = clampf(float(cfg.get_value("audio", "music_volume", music_volume)), 0.0, 1.0)
 	effects_volume = clampf(float(cfg.get_value("audio", "effects_volume", effects_volume)), 0.0, 1.0)
@@ -221,12 +268,15 @@ func load_settings() -> void:
 func save_settings() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("game", "beaker_capacity", beaker_capacity)
+	cfg.set_value("game", "filled_beakers", filled_beakers)
+	cfg.set_value("game", "empty_beakers", empty_beakers)
 	cfg.set_value("game", "hanoi_disk_count", hanoi_disk_count)
 	cfg.set_value("game", "difficulty", difficulty)
 	cfg.set_value("game", "show_goal_hint", show_goal_hint)
 	cfg.set_value("game", "special_beakers_enabled", special_beakers_enabled)
 	cfg.set_value("display", "liquid_alpha", liquid_alpha)
 	cfg.set_value("display", "liquid_palette", liquid_palette)
+	cfg.set_value("display", "liquid_symbol_set", liquid_symbol_set)
 	cfg.set_value("display", "show_liquid_symbols", show_liquid_symbols)
 	cfg.set_value("audio", "music_volume", music_volume)
 	cfg.set_value("audio", "effects_volume", effects_volume)

@@ -1,6 +1,7 @@
 # Godot 4+ specific ignores
 .godot/
 *.import
+!assets/fonts/NotoColorEmoji.ttf.import
 *.translation
 
 # Godot-specific ignores
@@ -12,6 +13,15 @@ mono_crash.*.json
 
 # Editor / IDE
 .claude/
+
+# Android export artifacts
+build/
+*.apk
+*.aab
+*.apk.idsig
+# Godot Android Gradle build template (regenerated on demand)
+/android/
+logs/
 
 # General ignores
 .DS_Store

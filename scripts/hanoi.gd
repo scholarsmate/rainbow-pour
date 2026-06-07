@@ -14,6 +14,12 @@ const POLE_WIDTH = 16
 var towers = [[], [], []]
 var tower_positions = []
 var selected_tower = -1
+var _play_area := Rect2(0.0, 96.0, 1280.0, 532.0)
+var _base_y := BASE_Y
+var _disk_height := DISK_HEIGHT
+var _disk_width_unit := DISK_WIDTH_UNIT
+var _pole_width := POLE_WIDTH
+var _tower_hit_width := 110.0
 
 var disk_colors = [
 	Color(0.937, 0.267, 0.267),  # Red
@@ -29,17 +35,47 @@ var disk_colors = [
 ]
 
 func _ready():
-	tower_positions = [
-		Vector2(240, BASE_Y),
-		Vector2(640, BASE_Y),
-		Vector2(1040, BASE_Y),
-	]
 	_apply_settings()
+	_recalculate_layout()
 	setup_disks()
 
 func _apply_settings() -> void:
 	disk_count = clampi(GameSettings.hanoi_disk_count,
 			GameSettings.HANOI_DISK_COUNT_MIN, GameSettings.HANOI_DISK_COUNT_MAX)
+
+func set_play_area(area: Rect2) -> void:
+	var sanitized := Rect2(
+			area.position.x,
+			area.position.y,
+			maxf(420.0, area.size.x),
+			maxf(260.0, area.size.y))
+	if _play_area.is_equal_approx(sanitized):
+		return
+	_play_area = sanitized
+	_recalculate_layout()
+	queue_redraw()
+
+func _recalculate_layout() -> void:
+	var visual_scale := _get_visual_scale()
+	var center_x := _play_area.position.x + _play_area.size.x * 0.5
+	var spacing := minf(400.0 * visual_scale, maxf(170.0 * visual_scale, _play_area.size.x * 0.32))
+	_base_y = _play_area.position.y + _play_area.size.y - 28.0 * visual_scale
+	_disk_height = clampf((_play_area.size.y - 74.0 * visual_scale) / float(disk_count + 1),
+			20.0 * visual_scale, DISK_HEIGHT * visual_scale)
+	_disk_width_unit = clampf((spacing * 0.68) / (float(maxi(1, disk_count)) * 1.1),
+			16.0 * visual_scale, DISK_WIDTH_UNIT * visual_scale)
+	_pole_width = clampf(_disk_width_unit * 0.50, 10.0 * visual_scale, POLE_WIDTH * visual_scale)
+	_tower_hit_width = maxf(92.0, spacing * 0.28)
+	tower_positions = [
+		Vector2(center_x - spacing, _base_y),
+		Vector2(center_x, _base_y),
+		Vector2(center_x + spacing, _base_y),
+	]
+
+func _get_visual_scale() -> float:
+	if _play_area.size.y > _play_area.size.x * 1.08:
+		return clampf(_play_area.size.x / 540.0, 1.0, 2.0)
+	return clampf(minf(_play_area.size.x / 1280.0, _play_area.size.y / 532.0), 0.85, 1.35)
 
 func setup_disks():
 	towers = [[], [], []]
@@ -60,6 +96,7 @@ func check_complete() -> bool:
 func reset():
 	selected_tower = -1
 	_apply_settings()
+	_recalculate_layout()
 	setup_disks()
 
 func _draw():
@@ -70,18 +107,18 @@ func _draw_tower(idx: int):
 	var pos = tower_positions[idx]
 	var is_selected = (idx == selected_tower)
 	var is_goal = (idx == 1)
-	var pole_h = disk_count * DISK_HEIGHT + 20
-	var base_hw = (disk_count + 1) * DISK_WIDTH_UNIT / 2.0
+	var pole_h = disk_count * _disk_height + 20.0
+	var base_hw = (disk_count + 1) * _disk_width_unit / 2.0
 
 	if is_selected:
-		var hw = (disk_count + 1) * DISK_WIDTH_UNIT / 2.0 + 10
+		var hw = (disk_count + 1) * _disk_width_unit / 2.0 + 10.0
 		draw_rect(Rect2(pos.x - hw, pos.y - pole_h - 10, hw * 2, pole_h + 20),
 				  Color(1, 1, 0.2, 0.3), true)
 
 	var pole_color := Color(1.0, 0.78, 0.12) if is_goal else Color(0.5, 0.52, 0.6)
 
 	# Pole
-	draw_rect(Rect2(pos.x - POLE_WIDTH / 2.0, pos.y - pole_h, POLE_WIDTH, pole_h),
+	draw_rect(Rect2(pos.x - _pole_width / 2.0, pos.y - pole_h, _pole_width, pole_h),
 			  pole_color, true)
 	# Base
 	draw_rect(Rect2(pos.x - base_hw, pos.y, base_hw * 2, 12), pole_color, true)
@@ -89,11 +126,11 @@ func _draw_tower(idx: int):
 	# Disks
 	for disk_idx in towers[idx].size():
 		var size = towers[idx][disk_idx]
-		var width = size * DISK_WIDTH_UNIT * 1.1
-		var y = pos.y - (disk_idx + 1) * DISK_HEIGHT
+		var width = size * _disk_width_unit * 1.1
+		var y = pos.y - (disk_idx + 1) * _disk_height
 		var color = disk_colors[(size - 1) % disk_colors.size()]
-		draw_rect(Rect2(pos.x - width / 2.0, y, width, DISK_HEIGHT - 4), color, true)
-		draw_rect(Rect2(pos.x - width / 2.0, y, width, DISK_HEIGHT - 4), Color.BLACK, false, 2)
+		draw_rect(Rect2(pos.x - width / 2.0, y, width, _disk_height - 4.0), color, true)
+		draw_rect(Rect2(pos.x - width / 2.0, y, width, _disk_height - 4.0), Color.BLACK, false, 2)
 
 func _input(event):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -103,7 +140,7 @@ func _input(event):
 
 func _get_tower_at(pos: Vector2) -> int:
 	for i in TOWER_COUNT:
-		if abs(pos.x - tower_positions[i].x) < 110:
+		if abs(pos.x - tower_positions[i].x) < _tower_hit_width:
 			return i
 	return -1
 

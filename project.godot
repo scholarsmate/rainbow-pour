@@ -10,11 +10,16 @@ config_version=5
 
 [application]
 
-config/name="Rainbow Hanoi"
-config/description="A colorful 2D puzzle game inspired by the Towers of Hanoi"
+config/name="Rainbow Pour"
+config/description="A colorful 2D pour puzzle game with a bonus Towers of Hanoi mode"
+config/version="0.1.0"
 run/main_scene="res://scenes/menu.tscn"
-config/features=PackedStringArray("4.6", "Forward Plus")
-config/icon="res://icon.svg"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+config/icon="res://assets/icons/app_icon_512.png"
+boot_splash/bg_color=Color(0.025, 0.035, 0.07, 1)
+boot_splash/image="res://assets/icons/app_icon_512.png"
+boot_splash/fullsize=false
+boot_splash/use_filter=true
 
 [autoload]
 
@@ -25,7 +30,13 @@ GameSettings="*res://scripts/game_settings.gd"
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
-window/stretch/mode="viewport"
+window/handheld/orientation=6
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[gui]
+
+theme/custom_font="res://assets/fonts/default_with_emoji.tres"
 
 [internationalization]
 
@@ -33,4 +44,7 @@ locale/translations_pot_files=PackedStringArray("res://translations/strings.csv"
 
 [rendering]
 
+textures/vram_compression/import_etc2_astc=true
 textures/canvas_textures/default_texture_filter=0
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

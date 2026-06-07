@@ -1,0 +1,6 @@
+[gd_resource type="FontVariation" load_steps=2 format=3]
+
+[ext_resource type="FontFile" uid="uid://nhf71s22eojt" path="res://assets/fonts/NotoColorEmoji.ttf" id="1_emoji"]
+
+[resource]
+fallbacks = Array[Font]([ExtResource("1_emoji")])

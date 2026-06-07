@@ -1,6 +1,8 @@
 keys,en
 Settings,Settings
+Cheats,Cheats
 Close,Close
+Actions,Actions
 Puzzle,Puzzle
 Display,Display
 Audio,Audio
@@ -8,18 +10,24 @@ Music,Music
 Effects,Effects
 Discs,Discs
 Slots,Slots
-Show optimal goal,Show optimal goal
+Show goal,Show goal
 Bonus beakers,Bonus beakers
+Special beakers,Special beakers
 Board code,Board code
 Copy,Copy
 Load,Load
 Palette,Palette
 Liquid opacity,Liquid opacity
-Show liquid symbols,Show liquid symbols
+Liquid symbols,Liquid symbols
+Symbols,Symbols
+Alphanumeric,Alphanumeric
+Letters,Letters
+Glyphs,Glyphs
 Difficulty,Difficulty
 Easy,Easy
 Normal,Normal
 Hard,Hard
+Custom,Custom
 Classic,Classic
 Colorblind,Colorblind
 High Contrast,High Contrast
@@ -30,37 +38,50 @@ pours,pours
 🎉  SOLVED!  🎉,🎉  SOLVED!  🎉
 Completed in %d %s,Completed in %d %s
 New Puzzle,New Puzzle
+New,New
 Retry,Retry
 View Board,View Board
+Board,Board
 Menu,Menu
-Possible moves: %d,Possible moves: %d
-Goal: finding optimal %s,Goal: finding optimal %s
-"Goal: finding optimal %s | %s","Goal: finding optimal %s | %s"
-Goal: exact solution not found,Goal: exact solution not found
-"Goal: %d | Limit: %d | Score: %s","Goal: %d | Limit: %d | Score: %s"
-"Goal: %d  |  Limit: %d  |  Score: %s","Goal: %d  |  Limit: %d  |  Score: %s"
-Score: finding optimal %s,Score: finding optimal %s
-Score: exact solution not found,Score: exact solution not found
-"Score: %s  |  Goal: %d  |  Extra: %s","Score: %s  |  Goal: %d  |  Extra: %s"
+Options: %d,Options: %d
+Finding goal %s,Finding goal %s
+"Finding goal %s | %s","Finding goal %s | %s"
+Calculating goal,Calculating goal
+Goal ready,Goal ready
+Still calculating goal,Still calculating goal
+Goal not found,Goal not found
+"Goal %d | Limit %d | Score %s","Goal %d | Limit %d | Score %s"
+Score pending %s,Score pending %s
+Score pending,Score pending
+"Score %s | Goal %d | Extra %s","Score %s | Goal %d | Extra %s"
 "  |  Undo: +%s","  |  Undo: +%s"
 "  |  Cheat: +%s","  |  Cheat: +%s"
+"  |  Beaker: +%s","  |  Beaker: +%s"
 "  |  Bonus: +%s","  |  Bonus: +%s"
 " | Undo: +%s"," | Undo: +%s"
 " | Cheat: +%s"," | Cheat: +%s"
-POUR LIMIT REACHED,POUR LIMIT REACHED
-STUCK IN A LOOP,STUCK IN A LOOP
-NO MOVES LEFT,NO MOVES LEFT
-You crossed the %d-%s limit.,You crossed the %d-%s limit.
-This board state repeated %d times.,This board state repeated %d times.
-There are no legal pours remaining.,There are no legal pours remaining.
+" | Beaker: +%s"," | Beaker: +%s"
+POUR LIMIT,POUR LIMIT
+LOOP DETECTED,LOOP DETECTED
+NO MOVES,NO MOVES
+BEAKER SHATTERED,BEAKER SHATTERED
+CRACKED NOT EMPTY,CRACKED NOT EMPTY
+Limit: %d %s.,Limit: %d %s.
+State repeated %d times.,State repeated %d times.
+No legal pours remain.,No legal pours remain.
+Cracked must end empty.,Cracked must end empty.
+Cracked beaker shattered.,Cracked beaker shattered.
 Score: %s,Score: %s
-"Goal: %d  |  Limit: %d  |  %s","Goal: %d  |  Limit: %d  |  %s"
-"Goal: %d  |  Limit: %d  |  Score: %s","Goal: %d  |  Limit: %d  |  Score: %s"
+"Goal %d | Limit %d | %s","Goal %d | Limit %d | %s"
+"Goal %d | Limit %d | Score %s","Goal %d | Limit %d | Score %s"
 Undo +%s,Undo +%s
+Undos left: %d,Undos left: %d
+Extra,Extra
+Extra +%s,Extra +%s
 Stir +%s,Stir +%s
 Swap +%s,Swap +%s
-Recovery: choose one mixed beaker to stir.,Recovery: choose one mixed beaker to stir.
-Recovery: choose two adjacent segments to swap.,Recovery: choose two adjacent segments to swap.
+Recovery: choose a mixed beaker.,Recovery: choose a mixed beaker.
+Recovery: choose adjacent segments.,Recovery: choose adjacent segments.
 Copied,Copied
 Invalid board code,Invalid board code
 Loaded,Loaded
@@ -80,42 +101,62 @@ Erase,Erase
 Type,Type
 Clear,Clear
 Random Fill,Random Fill
-Board complete. Finding optimal pours.,Board complete. Finding optimal pours.
-Board complete. Exact solution not found yet.,Board complete. Exact solution not found yet.
-Code ready with cached goal: %d pours.,Code ready with cached goal: %d pours.
-Place exactly %d segments of each color.,Place exactly %d segments of each color.
-Goal: place all pieces,Goal: place all pieces
-Goal: finding optimal,Goal: finding optimal
-Goal: %d pours,Goal: %d pours
-Goal: %s,Goal: %s
+Solving goal...,Solving goal...
+Goal not found.,Goal not found.
+Code ready: %d pours.,Code ready: %d pours.
+Use %d of each color.,Use %d of each color.
+No full one-color cracked beakers.,No full one-color cracked beakers.
+Place pieces,Place pieces
+Finding goal,Finding goal
+%d pours,%d pours
 Copied board code.,Copied board code.
 Prism,Prism
 Plain,Plain
 Tint %d,Tint %d
+Crack,Crack
 "🗼 Rainbow Hanoi
 
-Move all disks
-onto the middle tower","🗼 Rainbow Hanoi
+Move disks
+to the middle","🗼 Rainbow Hanoi
 
-Move all disks
-onto the middle tower"
-"🧪 Water Sort
+Move disks
+to the middle"
+"🗼 Rainbow Hanoi
 
-Sort all liquids
-into pure beakers","🧪 Water Sort
+Bonus side puzzle","🗼 Rainbow Hanoi
 
-Sort all liquids
-into pure beakers"
-"Board Builder
+Bonus side puzzle"
+"🗼 Rainbow Hanoi
+Bonus puzzle","🗼 Rainbow Hanoi
+Bonus puzzle"
+"🧪 Rainbow Pour
 
-Create a custom
-pour puzzle","Board Builder
+Sort colors
+into beakers","🧪 Rainbow Pour
 
-Create a custom
+Sort colors
+into beakers"
+"🧪 Rainbow Pour
+Sort colors into beakers","🧪 Rainbow Pour
+Sort colors into beakers"
+"🪅 Board Builder
+
+Make a
+pour puzzle","🪅 Board Builder
+
+Make a
 pour puzzle"
-"Click a beaker to select it, then click another to pour.
-You can only pour if the top colors match (or destination is empty). Sort all colors to win!","Click a beaker to select it, then click another to pour.
-You can only pour if the top colors match (or destination is empty). Sort all colors to win!"
-"Click a tower to select it, then click another to move the top disk.
-Move all disks onto the middle tower to win!","Click a tower to select it, then click another to move the top disk.
-Move all disks onto the middle tower to win!"
+"🪅 Board Builder
+
+Make pour puzzles","🪅 Board Builder
+
+Make pour puzzles"
+"🪅 Board Builder
+Make puzzles","🪅 Board Builder
+Make puzzles"
+"Select, then pour.
+One-color fills shatter cracked beakers.","Select, then pour.
+One-color fills shatter cracked beakers."
+"Select a tower, then move one disk.
+No larger disk on smaller.","Select a tower, then move one disk.
+No larger disk on smaller."
