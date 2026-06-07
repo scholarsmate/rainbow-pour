@@ -2,7 +2,9 @@
 .godot/
 *.import
 !assets/fonts/NotoColorEmoji.ttf.import
+!translations/strings.csv.import
 *.translation
+!translations/strings.en.translation
 
 # Godot-specific ignores
 export.cfg

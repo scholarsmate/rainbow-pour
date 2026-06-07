@@ -24,6 +24,11 @@ var _pour_stream_player: AudioStreamPlayer
 var _pour_splash_player: AudioStreamPlayer
 var _move: AudioStreamPlayer
 var _invalid: AudioStreamPlayer
+var _cap: AudioStreamPlayer
+var _crack: AudioStreamPlayer
+var _pipette_suck: AudioStreamPlayer
+var _pipette_squirt: AudioStreamPlayer
+var _pipette_stir: AudioStreamPlayer
 var _win: AudioStreamPlayer
 var _loss: AudioStreamPlayer
 var _spill: AudioStreamPlayer
@@ -38,6 +43,9 @@ var _star_boom_players: Array[AudioStreamPlayer] = []
 var _star_boom_next := 0
 var _pour_streams: Array[AudioStream] = []
 var _pour_splashes: Array[AudioStream] = []
+var _pipette_sucks: Array[AudioStream] = []
+var _pipette_squirts: Array[AudioStream] = []
+var _pipette_stirs: Array[AudioStream] = []
 var _pour_stop_tween: Tween
 var _loop_pressure := 0.0
 
@@ -54,6 +62,7 @@ func _ready():
 	get_tree().root.tree_exiting.connect(_stop_all)
 	if not headless:
 		_load_pour_assets()
+		_load_pipette_assets()
 	_click   = _add(null if headless else _gen_tone(720.0, 0.045, 48.0, 0.36), -4.0, EFFECTS_BUS)
 	_select  = _add(null if headless else _gen_tone(880.0, 0.07, 32.0, 0.50), -3.0, EFFECTS_BUS)
 	_pour    = _add(null if headless else _gen_pour(), -7.0, EFFECTS_BUS)
@@ -61,6 +70,11 @@ func _ready():
 	_pour_splash_player = _add(null, -5.5, EFFECTS_BUS)
 	_move    = _add(null if headless else _gen_tone(440.0, 0.06, 28.0, 0.45), -4.0, EFFECTS_BUS)
 	_invalid = _add(null if headless else _gen_tone(175.0, 0.14, 16.0, 0.65), -2.0, EFFECTS_BUS)
+	_cap     = _add(null if headless else _gen_cap_chime(), -2.8, EFFECTS_BUS)
+	_crack   = _add(null if headless else _gen_glass_crack(), -3.0, EFFECTS_BUS)
+	_pipette_suck = _add(null if headless or not _pipette_sucks.is_empty() else _gen_pipette_suck(), -2.6, EFFECTS_BUS)
+	_pipette_squirt = _add(null if headless or not _pipette_squirts.is_empty() else _gen_pipette_squirt(), -3.1, EFFECTS_BUS)
+	_pipette_stir = _add(null if headless or not _pipette_stirs.is_empty() else _gen_liquid_spill(), -3.8, EFFECTS_BUS)
 	_win     = _add(null if headless else _gen_win(), -1.0, EFFECTS_BUS)
 	_loss    = _add(null if headless else _gen_glass_shatter(), -2.0, EFFECTS_BUS)
 	_spill   = _add(null if headless else _gen_liquid_spill(), -4.0, EFFECTS_BUS)
@@ -127,6 +141,70 @@ func play_invalid():
 	if _audio_disabled or not _invalid:
 		return
 	_invalid.play()
+
+func play_beaker_capped():
+	if _audio_disabled or not _cap:
+		return
+	if _cap.playing:
+		_cap.stop()
+	_cap.pitch_scale = randf_range(0.98, 1.04)
+	_cap.play()
+
+func play_glass_crack():
+	if _audio_disabled or not _crack:
+		return
+	if _crack.playing:
+		_crack.stop()
+	_crack.pitch_scale = randf_range(0.97, 1.04)
+	_crack.play()
+
+func play_pipette_suck():
+	if _audio_disabled or not _pipette_suck:
+		return
+	if not _pipette_sucks.is_empty():
+		_pipette_suck.stop()
+		_pipette_suck.stream = _pipette_sucks.pick_random()
+		_pipette_suck.volume_db = randf_range(-3.8, -2.1)
+		_pipette_suck.pitch_scale = randf_range(0.84, 0.96)
+		_pipette_suck.play()
+		return
+	if _pipette_suck.playing:
+		_pipette_suck.stop()
+	_pipette_suck.volume_db = -2.6
+	_pipette_suck.pitch_scale = randf_range(0.96, 1.05)
+	_pipette_suck.play()
+
+func play_pipette_squirt():
+	if _audio_disabled or not _pipette_squirt:
+		return
+	if not _pipette_squirts.is_empty():
+		_pipette_squirt.stop()
+		_pipette_squirt.stream = _pipette_squirts.pick_random()
+		_pipette_squirt.volume_db = randf_range(-2.8, -0.9)
+		_pipette_squirt.pitch_scale = randf_range(1.00, 1.13)
+		_pipette_squirt.play()
+		return
+	if _pipette_squirt.playing:
+		_pipette_squirt.stop()
+	_pipette_squirt.volume_db = -3.1
+	_pipette_squirt.pitch_scale = randf_range(0.97, 1.06)
+	_pipette_squirt.play()
+
+func play_pipette_stir():
+	if _audio_disabled or not _pipette_stir:
+		return
+	if not _pipette_stirs.is_empty():
+		_pipette_stir.stop()
+		_pipette_stir.stream = _pipette_stirs.pick_random()
+		_pipette_stir.volume_db = randf_range(-4.2, -2.4)
+		_pipette_stir.pitch_scale = randf_range(0.88, 1.05)
+		_pipette_stir.play()
+		return
+	if _pipette_stir.playing:
+		_pipette_stir.stop()
+	_pipette_stir.volume_db = -3.8
+	_pipette_stir.pitch_scale = randf_range(0.92, 1.04)
+	_pipette_stir.play()
 
 func play_win():
 	if _audio_disabled or not _win:
@@ -314,6 +392,23 @@ func _load_pour_assets() -> void:
 		"res://assets/audio/water/pour_splash_03.ogg",
 	])
 
+func _load_pipette_assets() -> void:
+	_pipette_sucks = _load_audio_streams([
+		"res://assets/audio/pipette/pipette_suck_01.ogg",
+		"res://assets/audio/pipette/pipette_suck_02.ogg",
+		"res://assets/audio/pipette/pipette_suck_03.ogg",
+	])
+	_pipette_squirts = _load_audio_streams([
+		"res://assets/audio/pipette/pipette_squirt_01.ogg",
+		"res://assets/audio/pipette/pipette_squirt_02.ogg",
+		"res://assets/audio/pipette/pipette_squirt_03.ogg",
+	])
+	_pipette_stirs = _load_audio_streams([
+		"res://assets/audio/pipette/pipette_stir_01.ogg",
+		"res://assets/audio/pipette/pipette_stir_02.ogg",
+		"res://assets/audio/pipette/pipette_stir_03.ogg",
+	])
+
 func _load_audio_streams(paths: Array) -> Array[AudioStream]:
 	var streams: Array[AudioStream] = []
 	for path in paths:
@@ -458,6 +553,60 @@ func _gen_liquid_spill() -> AudioStreamWAV:
 		b.encode_s16(i * 2, clampi(v, -32768, 32767))
 	return _wav(b)
 
+func _gen_pipette_suck() -> AudioStreamWAV:
+	var rate := 22050
+	var dur := 0.44
+	var n := int(rate * dur)
+	var b := PackedByteArray(); b.resize(n * 2)
+	var fluid := 0.0
+	for i in n:
+		var t := float(i) / rate
+		var attack := minf(1.0, t / 0.026)
+		var tail := minf(1.0, (dur - t) / 0.11)
+		var env := attack * tail
+		var white := randf_range(-1.0, 1.0)
+		fluid = lerpf(fluid, white, 0.12)
+		var suction_hiss := (white - fluid) * 0.070
+		var rising := 420.0 + 690.0 * minf(1.0, t / dur)
+		var whistle := sin(TAU * rising * t) * exp(-t * 2.4) * 0.042
+		var sample := (fluid * 0.20 + suction_hiss + whistle) * env
+		for raw_start in [0.09, 0.18, 0.29]:
+			var start := float(raw_start)
+			if t < start:
+				continue
+			var local_t := t - start
+			if local_t > 0.09:
+				continue
+			sample += sin(TAU * (760.0 + start * 940.0) * local_t) * exp(-local_t * 42.0) * 0.085
+			sample += randf_range(-1.0, 1.0) * exp(-local_t * 58.0) * 0.030
+		var v := int(sample * 32767.0)
+		b.encode_s16(i * 2, clampi(v, -32768, 32767))
+	return _wav(b)
+
+func _gen_pipette_squirt() -> AudioStreamWAV:
+	var rate := 22050
+	var dur := 0.48
+	var n := int(rate * dur)
+	var b := PackedByteArray(); b.resize(n * 2)
+	var stream := 0.0
+	for i in n:
+		var t := float(i) / rate
+		var attack := minf(1.0, t / 0.018)
+		var tail := minf(1.0, (dur - t) / 0.13)
+		var env := attack * tail
+		var white := randf_range(-1.0, 1.0)
+		stream = lerpf(stream, white, 0.18)
+		var hiss := white - stream
+		var pressure := sin(TAU * (185.0 + sin(t * 34.0) * 28.0) * t) * 0.052
+		var sample := (stream * 0.30 + hiss * 0.090 + pressure) * env
+		if t >= 0.24:
+			var splash_t := t - 0.24
+			sample += randf_range(-1.0, 1.0) * exp(-splash_t * 24.0) * 0.090
+			sample += sin(TAU * 540.0 * splash_t) * exp(-splash_t * 28.0) * 0.060
+		var v := int(sample * 32767.0)
+		b.encode_s16(i * 2, clampi(v, -32768, 32767))
+	return _wav(b)
+
 func _gen_win() -> AudioStreamWAV:
 	var rate := 22050
 	var notes := [523.25, 659.25, 783.99, 1046.50]  # C5 E5 G5 C6
@@ -473,6 +622,35 @@ func _gen_win() -> AudioStreamWAV:
 			var si := start + i
 			if si < n:
 				b.encode_s16(si * 2, clampi(b.decode_s16(si * 2) + v, -32768, 32767))
+	return _wav(b)
+
+func _gen_cap_chime() -> AudioStreamWAV:
+	var rate := 22050
+	var dur := 0.48
+	var n := int(rate * dur)
+	var b := PackedByteArray()
+	b.resize(n * 2)
+	var notes := [
+		[0.00, 783.99, 0.18],
+		[0.07, 987.77, 0.16],
+		[0.15, 1318.51, 0.12],
+	]
+	for note in notes:
+		var start := int(float(note[0]) * rate)
+		var hz := float(note[1])
+		var amp := float(note[2])
+		var length := int(0.34 * rate)
+		for i in length:
+			var si := start + i
+			if si >= n:
+				break
+			var t := float(i) / rate
+			var attack := minf(1.0, t / 0.018)
+			var tail := exp(-t * 7.0)
+			var bell := sin(TAU * hz * t) + sin(TAU * hz * 2.01 * t) * 0.24
+			var sample := bell * attack * tail * amp
+			var v := int(sample * 32767.0)
+			b.encode_s16(si * 2, clampi(b.decode_s16(si * 2) + v, -32768, 32767))
 	return _wav(b)
 
 func _gen_glass_shatter() -> AudioStreamWAV:
@@ -504,6 +682,56 @@ func _gen_glass_shatter() -> AudioStreamWAV:
 		var v := int((sample + debris) * 32767.0)
 		b.encode_s16(i * 2, clampi(v, -32768, 32767))
 	return _wav(b)
+
+func _gen_glass_crack() -> AudioStreamWAV:
+	var rate := 22050
+	var dur := 0.46
+	var n := int(rate * dur)
+	var b := PackedByteArray(); b.resize(n * 2)
+	var ceramic_ticks := [
+		[0.012, 1320.0, 0.42],
+		[0.030, 2860.0, 0.30],
+		[0.055, 4380.0, 0.23],
+		[0.095, 2180.0, 0.20],
+		[0.145, 5260.0, 0.12],
+	]
+	for i in n:
+		var t := float(i) / rate
+		var impact_attack := minf(1.0, t / 0.010)
+		var stone_thump := sin(TAU * (118.0 - 38.0 * minf(1.0, t / 0.09)) * t) * impact_attack * exp(-t * 18.0) * 0.46
+		var knock := sin(TAU * 360.0 * t) * exp(-t * 34.0) * 0.20
+		var fissure_noise := randf_range(-1.0, 1.0) * exp(-maxf(0.0, t - 0.036) * 18.0) * _smooth_audio_window(t, 0.034, 0.28) * 0.10
+		var rising_fissure := 0.0
+		if t >= 0.042:
+			var ft := t - 0.042
+			var hz := 980.0 + 1880.0 * minf(1.0, ft / 0.20)
+			rising_fissure = sin(TAU * hz * ft) * exp(-ft * 9.0) * 0.075
+		var sample := stone_thump + knock + fissure_noise + rising_fissure
+		for tick in ceramic_ticks:
+			var start := float(tick[0])
+			if t < start:
+				continue
+			var local_t := t - start
+			var hz := float(tick[1])
+			var amp := float(tick[2])
+			sample += sin(TAU * hz * local_t) * exp(-local_t * 46.0) * amp
+			sample += sin(TAU * hz * 1.52 * local_t) * exp(-local_t * 58.0) * amp * 0.28
+			sample += randf_range(-1.0, 1.0) * exp(-local_t * 72.0) * amp * 0.20
+		var tail_tick := 0.0
+		if t >= 0.23:
+			var tt := t - 0.23
+			tail_tick = sin(TAU * 1540.0 * tt) * exp(-tt * 19.0) * 0.055
+		sample += tail_tick
+		var v := int(sample * 32767.0)
+		b.encode_s16(i * 2, clampi(v, -32768, 32767))
+	return _wav(b)
+
+func _smooth_audio_window(t: float, start: float, end: float) -> float:
+	if t < start or t > end:
+		return 0.0
+	var fade_in := minf(1.0, (t - start) / 0.018)
+	var fade_out := minf(1.0, (end - t) / 0.10)
+	return fade_in * fade_out
 
 func _gen_star_boom() -> AudioStreamWAV:
 	var rate := 22050

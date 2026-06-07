@@ -1,0 +1,142 @@
+[adventure]
+id = "starter_sprint"
+title = "Starter Sprint"
+description = "A 30-puzzle Adventure Mode MVP sprint with a short chill tutorial opening."
+version = 1
+seed = 20260607
+default_locale = "en"
+output = "assets/adventures/starter_sprint.json"
+
+[defaults]
+puzzle_count = 10
+candidate_limit = 160
+node_limit = 220000
+frontier_limit = 90000
+solver_timeout_ms = 1200
+requires_all_solved = true
+min_stars_to_unlock_next = 32
+dialog_speaker = "Beaker"
+intro_dialog = []
+outro_dialog = []
+capacity = 4
+filled_beakers = 5
+empty_beakers = 2
+min_solution_depth = 5
+max_solution_depth = 12
+cracked_count = 0
+hidden_cracked_count = 0
+visible_cracked_count = 0
+prismatic_count = 0
+tinted_count = 0
+
+[defaults.cheats]
+undo_max_uses = 4
+extra_beaker_max_uses = 1
+recovery_max_uses_each = 1
+stir_cost = 2.0
+swap_cost = 3.0
+pipette_cost = 4.0
+extra_beaker_penalty_ratio = 0.35
+extra_beaker_min_penalty = 4.0
+
+[[blocks]]
+id = "block_01_tutorial"
+title = "First Steps"
+introduces = "Beaker basics, taller stacks, prismatic beakers, and tinted beakers"
+min_stars_to_unlock_next = 30
+capacity = 4
+filled_beakers = 5
+empty_beakers = 2
+min_solution_depth = 6
+max_solution_depth = 12
+prismatic_count = 1
+tinted_count = 1
+
+[[blocks.puzzles]]
+puzzle_title = "First Pour"
+introduces = "Basic sorting"
+chill = true
+stars_on_solve = 5
+intro_dialog = [
+  "Pipette, the rainbow has gone lumpy. Put each color with its own family.",
+]
+outro_dialog = [
+  "Good, Pipette. A small rainbow, but neatly folded.",
+]
+capacity = 3
+filled_beakers = 3
+empty_beakers = 2
+min_solution_depth = 2
+max_solution_depth = 6
+prismatic_count = 0
+tinted_count = 0
+
+[[blocks.puzzles]]
+puzzle_title = "Prismatic Preview"
+introduces = "Prismatic beaker bonus"
+chill = true
+stars_on_solve = 5
+intro_dialog = [
+  "Pipette, this glass is proud and sparkly. Finish it well and it will applaud itself.",
+]
+outro_dialog = [
+  "A glittering result. The prismatic beaker is being very modest about it.",
+]
+capacity = 4
+filled_beakers = 4
+empty_beakers = 2
+min_solution_depth = 4
+max_solution_depth = 8
+prismatic_count = 1
+tinted_count = 0
+
+[[blocks.puzzles]]
+puzzle_title = "Tinted Target"
+introduces = "Tinted beaker bonus"
+chill = true
+stars_on_solve = 5
+intro_dialog = [
+  "Now, Pipette, aim the right color into the tinted glass. It has opinions.",
+]
+outro_dialog = [
+  "Excellent. The opinionated beaker has been satisfied.",
+]
+capacity = 4
+filled_beakers = 5
+empty_beakers = 2
+min_solution_depth = 5
+max_solution_depth = 16
+prismatic_count = 0
+tinted_count = 1
+
+[[blocks]]
+id = "block_02_cracked"
+title = "Cracked Glass"
+introduces = "Hidden cracked beakers"
+min_stars_to_unlock_next = 32
+capacity = 4
+filled_beakers = 5
+empty_beakers = 2
+min_solution_depth = 7
+max_solution_depth = 14
+cracked_count = 1
+hidden_cracked_count = 1
+visible_cracked_count = 0
+prismatic_count = 1
+tinted_count = 1
+
+[[blocks]]
+id = "block_03_tall_stacks"
+title = "Tall Stacks"
+introduces = "More colors and five-segment beakers"
+min_stars_to_unlock_next = 34
+capacity = 5
+filled_beakers = 5
+empty_beakers = 2
+min_solution_depth = 8
+max_solution_depth = 15
+cracked_count = 1
+hidden_cracked_count = 1
+visible_cracked_count = 0
+prismatic_count = 1
+tinted_count = 1

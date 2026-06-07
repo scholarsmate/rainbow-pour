@@ -2,8 +2,11 @@ keys,en
 Settings,Settings
 Cheats,Cheats
 Close,Close
+Cancel,Cancel
 Actions,Actions
 Puzzle,Puzzle
+Rank %d/%d,Rank %d/%d
+Puzzle %d/%d,Puzzle %d/%d
 Display,Display
 Audio,Audio
 Music,Music
@@ -11,6 +14,7 @@ Effects,Effects
 Discs,Discs
 Slots,Slots
 Show goal,Show goal
+Chill mode,Chill mode
 Bonus beakers,Bonus beakers
 Special beakers,Special beakers
 Board code,Board code
@@ -54,17 +58,22 @@ Goal not found,Goal not found
 Score pending %s,Score pending %s
 Score pending,Score pending
 "Score %s | Goal %d | Extra %s","Score %s | Goal %d | Extra %s"
+"Cheats used: %s","Cheats used: %s"
 "  |  Undo: +%s","  |  Undo: +%s"
 "  |  Cheat: +%s","  |  Cheat: +%s"
 "  |  Beaker: +%s","  |  Beaker: +%s"
 "  |  Bonus: +%s","  |  Bonus: +%s"
+Bonuses: %s,Bonuses: %s
+Bonus +%s,Bonus +%s
+Prism +%s,Prism +%s
+Tint +%s,Tint +%s
 " | Undo: +%s"," | Undo: +%s"
 " | Cheat: +%s"," | Cheat: +%s"
 " | Beaker: +%s"," | Beaker: +%s"
 POUR LIMIT,POUR LIMIT
 LOOP DETECTED,LOOP DETECTED
 NO MOVES,NO MOVES
-BEAKER SHATTERED,BEAKER SHATTERED
+SHATTERED,SHATTERED
 CRACKED NOT EMPTY,CRACKED NOT EMPTY
 Limit: %d %s.,Limit: %d %s.
 State repeated %d times.,State repeated %d times.
@@ -74,14 +83,24 @@ Cracked beaker shattered.,Cracked beaker shattered.
 Score: %s,Score: %s
 "Goal %d | Limit %d | %s","Goal %d | Limit %d | %s"
 "Goal %d | Limit %d | Score %s","Goal %d | Limit %d | Score %s"
+Undo,Undo
+Undo x%d,Undo x%d
 Undo +%s,Undo +%s
 Undos left: %d,Undos left: %d
 Extra,Extra
 Extra +%s,Extra +%s
+Stir,Stir
 Stir +%s,Stir +%s
+Swap,Swap
 Swap +%s,Swap +%s
-Recovery: choose a mixed beaker.,Recovery: choose a mixed beaker.
-Recovery: choose adjacent segments.,Recovery: choose adjacent segments.
+Pipette,Pipette
+Pipette +%s,Pipette +%s
+Transfer,Transfer
+Transfer +%s,Transfer +%s
+Cheat,Cheat
+Cheat: choose a mixed beaker.,Cheat: choose a mixed beaker.
+Cheat: choose adjacent segments.,Cheat: choose adjacent segments.
+Cheat: choose liquid to pipette.,Cheat: choose liquid to pipette.
 Copied,Copied
 Invalid board code,Invalid board code
 Loaded,Loaded
@@ -160,3 +179,55 @@ One-color fills shatter cracked beakers."
 "Select a tower, then move one disk.
 No larger disk on smaller.","Select a tower, then move one disk.
 No larger disk on smaller."
+Solved Result Title,🎉  SOLVED!  🎉
+Shattered Beaker Title,🧪 SHATTERED 🧪
+UI Symbol Star Filled,★
+UI Symbol Star Empty,☆
+UI Symbol Star Spark,✦
+Liquid Symbol Circle,●
+Liquid Symbol Square,■
+Liquid Symbol Triangle,▲
+Liquid Symbol Diamond,◆
+Liquid Symbol Star,★
+Liquid Symbol Cross,✚
+Liquid Symbol Spark,✦
+Liquid Symbol Moon,☾
+Liquid Symbol Sun,☀
+Liquid Symbol Club,♣
+Liquid Symbol Heart,♥
+Liquid Symbol Spade,♠
+Liquid Symbol Pentagon,⬟
+Liquid Symbol Hexagon,⬢
+Liquid Symbol Flower,✿
+Liquid Symbol Umbrella,☂
+Menu Mode Hanoi Compact,"🗼 Rainbow Hanoi
+Bonus puzzle"
+Menu Mode Pour Compact,"🧪 Rainbow Pour
+Sort colors into beakers"
+Menu Mode Builder Compact,"🪅 Board Builder
+Make puzzles"
+Adventure Mode,Adventure Mode
+Continue Adventure,Continue Adventure
+Reset Progress,Reset Progress
+Clear Progress,Clear Progress
+Clear progress?,Clear progress?
+"Clear progress for %s?","Clear progress for %s?"
+This cannot be undone.,This cannot be undone.
+No adventures found.,No adventures found.
+Locked,Locked
+Clear previous block to unlock.,Clear previous block to unlock.
+Open,Open
+1 more locked block,1 more locked block
+"%d more locked blocks","%d more locked blocks"
+Rank %d/%d: %s | Puzzle %d/%d: %s,Rank %d/%d: %s | Puzzle %d/%d: %s
+Rank progress: %d/%d stars (threshold %d).,Rank progress: %d/%d stars (threshold %d).
+Final rank progress: %d/%d stars.,Final rank progress: %d/%d stars.
+"%d puzzle remaining for next rank.","%d puzzle remaining for next rank."
+"%d puzzles remaining for next rank.","%d puzzles remaining for next rank."
+"%d star remaining for next rank.","%d star remaining for next rank."
+"%d stars remaining for next rank.","%d stars remaining for next rank."
+Next rank unlocked.,Next rank unlocked.
+Next,Next
+Continue,Continue
+Menu Mode Adventure Compact,"Adventure Mode
+Play puzzle packs"

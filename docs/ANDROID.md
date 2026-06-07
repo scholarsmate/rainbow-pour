@@ -68,9 +68,9 @@ In `Project > Export`:
 4. For phone testing, export format can be `APK`.
 5. Keep debug export enabled for early device testing.
 6. Under `Options > Screen`, set `Orientation` to `Sensor` so the APK can rotate between landscape and portrait.
-7. Export to a local `builds/` or `exports/` folder.
+7. Export to a local `build/`, `builds/`, or `exports/` folder. The current debug command in this repo writes `build/rainbow-pour.apk`.
 
-`export_presets.cfg` is ignored by git in this repo because Android export presets can contain keystore paths and passwords. Keep signing credentials local.
+Android export presets can contain keystore paths and passwords. Keep signing credentials local and do not commit release keystore secrets.
 
 ## Versioning
 
@@ -95,7 +95,7 @@ From PowerShell:
 
 ```powershell
 & "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" devices
-& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" install -r .\builds\rainbow-pour-debug.apk
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" install -r .\build\rainbow-pour.apk
 ```
 
 If the device is listed as `unauthorized`, unlock the phone and accept the USB debugging prompt.

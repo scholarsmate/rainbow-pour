@@ -1,0 +1,263 @@
+[adventure]
+id = "rainbow_trail"
+title = "Rainbow Trail"
+description = "A full 110-puzzle Adventure pack curated from hard board candidates, with each rank introducing a sharper mechanic."
+version = 1
+seed = 20260609
+default_locale = "en"
+output = "assets/adventures/rainbow_trail.json"
+
+[candidates]
+input_glob = "build/adventure_candidates/hard_candidates_20260608_shard*.jsonl"
+
+[defaults]
+puzzle_count = 10
+requires_all_solved = true
+min_stars_to_unlock_next = 34
+
+[defaults.cheats]
+undo_max_uses = 4
+extra_beaker_max_uses = 1
+recovery_max_uses_each = 1
+stir_cost = 2.0
+swap_cost = 3.0
+pipette_cost = 4.0
+extra_beaker_penalty_ratio = 0.35
+extra_beaker_min_penalty = 4.0
+
+[[blocks]]
+id = "rank_01_bonus_foundations"
+title = "Bonus Foundations"
+puzzle_title_prefix = "Bonus Foundation"
+introduces = "Four-slot boards with prismatic and tinted bonus goals"
+source_profiles = ["hard_four_slot_bonus"]
+min_depth = 12
+max_depth = 16
+min_stars_to_unlock_next = 30
+intro_dialog = [
+  { speaker = "Beaker", text = "Pipette, the practice bench is behind us. These boards still sparkle, but now they expect discipline." },
+  { speaker = "Pipette", text = "I will collect the shine without spilling the plan." },
+]
+outro_dialog = [
+  { speaker = "Beaker", text = "A respectable beginning. The stars are awake now." },
+]
+
+[[blocks]]
+id = "rank_02_bonus_pressure"
+title = "Bonus Pressure"
+puzzle_title_prefix = "Bonus Pressure"
+introduces = "Longer four-slot boards where bonus routes compete with move economy"
+source_profiles = ["hard_four_slot_bonus"]
+min_depth = 17
+max_depth = 19
+min_stars_to_unlock_next = 32
+intro_dialog = [
+  { speaker = "Beaker", text = "The bonus glass is no longer a decoration. It is bait with manners." },
+  { speaker = "Pipette", text = "Then I will be polite and suspicious." },
+]
+outro_dialog = [
+  { speaker = "Beaker", text = "Polite suspicion has served you well." },
+]
+
+[[blocks]]
+id = "rank_03_hidden_cracks"
+title = "Hidden Cracks"
+puzzle_title_prefix = "Hidden Crack"
+introduces = "Initially hidden cracked beakers that must end empty"
+source_profiles = ["hidden_crack_four_slot"]
+min_depth = 13
+max_depth = 17
+min_stars_to_unlock_next = 33
+intro_dialog = [
+  { speaker = "Beaker", text = "Some cracked beakers are shy about danger. Pour until they reveal themselves, then keep them empty." },
+  { speaker = "Pipette", text = "Careful first, confident later." },
+]
+outro_dialog = [
+  { speaker = "Beaker", text = "You found the crack and denied it a dramatic ending." },
+]
+
+[[blocks]]
+id = "rank_04_fault_lines"
+title = "Fault Lines"
+puzzle_title_prefix = "Fault Line"
+introduces = "Deeper hidden-crack boards with tighter recovery windows"
+source_profiles = ["hidden_crack_four_slot"]
+min_depth = 18
+max_depth = 22
+min_stars_to_unlock_next = 34
+intro_dialog = [
+  { speaker = "Beaker", text = "The fault lines run through the solution now. Every spare space has a memory." },
+  { speaker = "Pipette", text = "I will remember before the beakers do." },
+]
+outro_dialog = [
+  { speaker = "Beaker", text = "No shatter, no panic, no unnecessary sweeping." },
+]
+
+[[blocks]]
+id = "rank_05_tall_glass"
+title = "Tall Glass"
+puzzle_title_prefix = "Tall Glass"
+introduces = "Five-segment beakers with hidden cracks and bonus targets"
+source_profiles = ["tall_five_slot"]
+min_depth = 17
+max_depth = 20
+min_stars_to_unlock_next = 34
+intro_dialog = [
+  { speaker = "Beaker", text = "The beakers are taller now, Pipette. A mistake can hide under more layers." },
+  { speaker = "Pipette", text = "Then I will make fewer places for mistakes to hide." },
+]
+outro_dialog = [
+  { speaker = "Beaker", text = "Tall glass, short nonsense. Excellent." },
+]
+
+[[blocks]]
+id = "rank_06_tall_pressure"
+title = "Tall Pressure"
+puzzle_title_prefix = "Tall Pressure"
+introduces = "Five-segment boards with longer optimal routes"
+source_profiles = ["tall_five_slot"]
+min_depth = 21
+max_depth = 25
+min_stars_to_unlock_next = 35
+intro_dialog = [
+  { speaker = "Beaker", text = "These tall boards have patience. They are hoping you do not." },
+  { speaker = "Pipette", text = "I brought enough patience for both of us." },
+]
+outro_dialog = [
+  { speaker = "Beaker", text = "Patience has been converted into stars." },
+]
+
+[[blocks]]
+id = "rank_07_double_cracks"
+title = "Double Cracks"
+puzzle_title_prefix = "Double Crack"
+introduces = "Two cracked beakers, one visible and one hidden"
+source_profiles = ["double_crack_five_slot"]
+min_depth = 17
+max_depth = 21
+min_stars_to_unlock_next = 35
+intro_dialog = [
+  { speaker = "Beaker", text = "Two cracked beakers now. One announces itself. The other waits for your assumptions." },
+  { speaker = "Pipette", text = "I will not give it assumptions." },
+]
+outro_dialog = [
+  { speaker = "Beaker", text = "Two cracks, zero disasters. Very tidy." },
+]
+
+[blocks.cheats]
+undo_max_uses = 3
+extra_beaker_max_uses = 1
+recovery_max_uses_each = 1
+stir_cost = 3.0
+swap_cost = 4.0
+pipette_cost = 5.0
+extra_beaker_penalty_ratio = 0.45
+extra_beaker_min_penalty = 5.0
+
+[[blocks]]
+id = "rank_08_crowded_cracks"
+title = "Crowded Cracks"
+puzzle_title_prefix = "Crowded Crack"
+introduces = "Double-crack boards with deeper routes and more expensive tools"
+source_profiles = ["double_crack_five_slot"]
+min_depth = 22
+max_depth = 26
+min_stars_to_unlock_next = 36
+intro_dialog = [
+  { speaker = "Beaker", text = "The tools cost more because the lab accountant has seen your progress." },
+  { speaker = "Pipette", text = "Then I will solve with fewer receipts." },
+]
+outro_dialog = [
+  { speaker = "Beaker", text = "A controlled expense. The accountant is mildly disappointed." },
+]
+
+[blocks.cheats]
+undo_max_uses = 3
+extra_beaker_max_uses = 1
+recovery_max_uses_each = 1
+stir_cost = 3.0
+swap_cost = 4.0
+pipette_cost = 5.0
+extra_beaker_penalty_ratio = 0.45
+extra_beaker_min_penalty = 5.0
+
+[[blocks]]
+id = "rank_09_six_slots"
+title = "Six Slots"
+puzzle_title_prefix = "Six Slot"
+introduces = "Six-segment beakers with hidden cracks and multiple bonuses"
+source_profiles = ["six_slot_practice"]
+min_depth = 16
+max_depth = 21
+min_stars_to_unlock_next = 36
+intro_dialog = [
+  { speaker = "Beaker", text = "Six slots, Pipette. More layers, more temptation, and more places to bury yesterday's mistake." },
+  { speaker = "Pipette", text = "I will not bury mistakes. I will dissolve them." },
+]
+outro_dialog = [
+  { speaker = "Beaker", text = "Six layers sorted. The shelf looks less smug." },
+]
+
+[blocks.cheats]
+undo_max_uses = 3
+extra_beaker_max_uses = 1
+recovery_max_uses_each = 1
+stir_cost = 3.0
+swap_cost = 4.0
+pipette_cost = 5.0
+extra_beaker_penalty_ratio = 0.45
+extra_beaker_min_penalty = 5.0
+
+[[blocks]]
+id = "rank_10_six_slot_pressure"
+title = "Six-Slot Pressure"
+puzzle_title_prefix = "Six Pressure"
+introduces = "Deeper six-segment boards with stricter star pressure"
+source_profiles = ["six_slot_practice", "six_slot_hard"]
+min_depth = 22
+max_depth = 26
+min_stars_to_unlock_next = 37
+intro_dialog = [
+  { speaker = "Beaker", text = "The six-slot boards are now judging efficiency. Quietly, but not kindly." },
+  { speaker = "Pipette", text = "I can work with quiet." },
+]
+outro_dialog = [
+  { speaker = "Beaker", text = "Efficient enough to make the quiet useful." },
+]
+
+[blocks.cheats]
+undo_max_uses = 2
+extra_beaker_max_uses = 1
+recovery_max_uses_each = 1
+stir_cost = 4.0
+swap_cost = 5.0
+pipette_cost = 6.0
+extra_beaker_penalty_ratio = 0.50
+extra_beaker_min_penalty = 6.0
+
+[[blocks]]
+id = "rank_11_master_shelf"
+title = "Master Shelf"
+puzzle_title_prefix = "Master Shelf"
+introduces = "Hard six-segment boards with scarce help"
+source_profiles = ["six_slot_hard"]
+min_depth = 23
+max_depth = 28
+min_stars_to_unlock_next = 38
+intro_dialog = [
+  { speaker = "Beaker", text = "This is the master shelf. The beakers are tall, cracked, tinted, sparkling, and entirely too pleased with themselves." },
+  { speaker = "Pipette", text = "Then I will give them a reason to be quiet." },
+]
+outro_dialog = [
+  { speaker = "Beaker", text = "The master shelf is quiet. Pipette, you have carried the rainbow well." },
+]
+
+[blocks.cheats]
+undo_max_uses = 2
+extra_beaker_max_uses = 0
+recovery_max_uses_each = 0
+stir_cost = 4.0
+swap_cost = 5.0
+pipette_cost = 6.0
+extra_beaker_penalty_ratio = 0.55
+extra_beaker_min_penalty = 6.0

@@ -88,7 +88,24 @@ const LIQUID_SYMBOL_SETS := {
 	},
 	"glyphs": {
 		"label": "Glyphs",
-		"symbols": ["●", "■", "▲", "◆", "★", "✚", "✦", "☾", "☀", "♣", "♥", "♠", "⬟", "⬢", "✿", "☂"],
+		"symbols": [
+			"Liquid Symbol Circle",
+			"Liquid Symbol Square",
+			"Liquid Symbol Triangle",
+			"Liquid Symbol Diamond",
+			"Liquid Symbol Star",
+			"Liquid Symbol Cross",
+			"Liquid Symbol Spark",
+			"Liquid Symbol Moon",
+			"Liquid Symbol Sun",
+			"Liquid Symbol Club",
+			"Liquid Symbol Heart",
+			"Liquid Symbol Spade",
+			"Liquid Symbol Pentagon",
+			"Liquid Symbol Hexagon",
+			"Liquid Symbol Flower",
+			"Liquid Symbol Umbrella",
+		],
 	},
 }
 
@@ -120,6 +137,7 @@ var filled_beakers: int = 6
 var empty_beakers: int = 2
 var hanoi_disk_count: int = 5
 var difficulty: String = "normal"
+var chill_mode: bool = false
 var show_goal_hint: bool = true
 var special_beakers_enabled: bool = true
 var liquid_alpha: float = LIQUID_ALPHA_DEFAULT
@@ -149,6 +167,10 @@ func set_difficulty(value: String) -> void:
 			filled_beakers = int(DIFFICULTIES[value]["filled_beakers"])
 			empty_beakers = int(DIFFICULTIES[value]["empty_beakers"])
 		save_settings()
+
+func set_chill_mode(value: bool) -> void:
+	chill_mode = value
+	save_settings()
 
 func set_beaker_counts(filled_count: int, empty_count: int) -> void:
 	filled_beakers = clampi(filled_count, 1, MAX_BEAKERS - 1)
@@ -219,7 +241,13 @@ func get_liquid_colors() -> Array:
 
 func get_liquid_symbols() -> Array:
 	var symbol_key := liquid_symbol_set if LIQUID_SYMBOL_SETS.has(liquid_symbol_set) else LIQUID_SYMBOL_SET_DEFAULT
-	return LIQUID_SYMBOL_SETS[symbol_key]["symbols"]
+	var symbols: Array = LIQUID_SYMBOL_SETS[symbol_key]["symbols"]
+	if symbol_key != "glyphs":
+		return symbols
+	var localized_symbols := []
+	for symbol in symbols:
+		localized_symbols.append(tr(str(symbol)))
+	return localized_symbols
 
 func get_liquid_palette_label(key: String) -> String:
 	if not LIQUID_PALETTES.has(key):
@@ -252,6 +280,7 @@ func load_settings() -> void:
 	empty_beakers = clampi(int(cfg.get_value("game", "empty_beakers", int(default_counts["empty_beakers"]))), 1, MAX_BEAKERS - filled_beakers)
 	var matching := find_difficulty_for_counts(filled_beakers, empty_beakers)
 	difficulty = matching if matching != "" else "custom"
+	chill_mode = bool(cfg.get_value("game", "chill_mode", chill_mode))
 	show_goal_hint = bool(cfg.get_value("game", "show_goal_hint", show_goal_hint))
 	special_beakers_enabled = bool(cfg.get_value("game", "special_beakers_enabled", special_beakers_enabled))
 	liquid_alpha = clampf(float(cfg.get_value("display", "liquid_alpha", liquid_alpha)), LIQUID_ALPHA_MIN, LIQUID_ALPHA_MAX)
@@ -272,6 +301,7 @@ func save_settings() -> void:
 	cfg.set_value("game", "empty_beakers", empty_beakers)
 	cfg.set_value("game", "hanoi_disk_count", hanoi_disk_count)
 	cfg.set_value("game", "difficulty", difficulty)
+	cfg.set_value("game", "chill_mode", chill_mode)
 	cfg.set_value("game", "show_goal_hint", show_goal_hint)
 	cfg.set_value("game", "special_beakers_enabled", special_beakers_enabled)
 	cfg.set_value("display", "liquid_alpha", liquid_alpha)

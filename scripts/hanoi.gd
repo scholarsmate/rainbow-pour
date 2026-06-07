@@ -59,21 +59,31 @@ func _recalculate_layout() -> void:
 	var visual_scale := _get_visual_scale()
 	var center_x := _play_area.position.x + _play_area.size.x * 0.5
 	var spacing := minf(400.0 * visual_scale, maxf(170.0 * visual_scale, _play_area.size.x * 0.32))
-	_base_y = _play_area.position.y + _play_area.size.y - 28.0 * visual_scale
 	_disk_height = clampf((_play_area.size.y - 74.0 * visual_scale) / float(disk_count + 1),
 			20.0 * visual_scale, DISK_HEIGHT * visual_scale)
 	_disk_width_unit = clampf((spacing * 0.68) / (float(maxi(1, disk_count)) * 1.1),
 			16.0 * visual_scale, DISK_WIDTH_UNIT * visual_scale)
 	_pole_width = clampf(_disk_width_unit * 0.50, 10.0 * visual_scale, POLE_WIDTH * visual_scale)
 	_tower_hit_width = maxf(92.0, spacing * 0.28)
+	var pole_h := float(disk_count) * _disk_height + 20.0
+	var bottom_base_y := _play_area.position.y + _play_area.size.y - 28.0 * visual_scale
+	if _is_play_area_portrait():
+		var centered_base_y := _play_area.position.y + _play_area.size.y * 0.5 + pole_h * 0.5 - 6.0
+		var top_base_y := _play_area.position.y + pole_h + 16.0 * visual_scale
+		_base_y = clampf(centered_base_y, top_base_y, bottom_base_y)
+	else:
+		_base_y = bottom_base_y
 	tower_positions = [
 		Vector2(center_x - spacing, _base_y),
 		Vector2(center_x, _base_y),
 		Vector2(center_x + spacing, _base_y),
 	]
 
+func _is_play_area_portrait() -> bool:
+	return _play_area.size.y > _play_area.size.x * 1.08
+
 func _get_visual_scale() -> float:
-	if _play_area.size.y > _play_area.size.x * 1.08:
+	if _is_play_area_portrait():
 		return clampf(_play_area.size.x / 540.0, 1.0, 2.0)
 	return clampf(minf(_play_area.size.x / 1280.0, _play_area.size.y / 532.0), 0.85, 1.35)
 

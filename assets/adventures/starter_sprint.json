@@ -1,0 +1,2563 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-06-08T20:02:22+00:00",
+  "generator": {
+    "name": "rainbow-pour-adventure-generator",
+    "version": 1,
+    "config": "tools/adventure_starter_sprint.toml"
+  },
+  "adventure": {
+    "id": "starter_sprint",
+    "title": "Starter Sprint",
+    "title_key": "adventure.starter_sprint.title",
+    "description": "A 30-puzzle Adventure Mode MVP sprint with a short chill tutorial opening.",
+    "description_key": "adventure.starter_sprint.description",
+    "version": 1,
+    "seed": 20260607,
+    "default_locale": "en",
+    "block_count": 3,
+    "puzzle_count": 30,
+    "total_stars": 150
+  },
+  "i18n": {
+    "en": {
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p01.title": "First Pour",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p01.introduces": "Basic sorting",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p01.dialog.intro.line_01.speaker": "Beaker",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p01.dialog.intro.line_01.text": "Pipette, the rainbow has gone lumpy. Put each color with its own family.",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p01.dialog.outro.line_01.speaker": "Beaker",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p01.dialog.outro.line_01.text": "Good, Pipette. A small rainbow, but neatly folded.",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p02.title": "Prismatic Preview",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p02.introduces": "Prismatic beaker bonus",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p02.dialog.intro.line_01.speaker": "Beaker",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p02.dialog.intro.line_01.text": "Pipette, this glass is proud and sparkly. Finish it well and it will applaud itself.",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p02.dialog.outro.line_01.speaker": "Beaker",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p02.dialog.outro.line_01.text": "A glittering result. The prismatic beaker is being very modest about it.",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p03.title": "Tinted Target",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p03.introduces": "Tinted beaker bonus",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p03.dialog.intro.line_01.speaker": "Beaker",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p03.dialog.intro.line_01.text": "Now, Pipette, aim the right color into the tinted glass. It has opinions.",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p03.dialog.outro.line_01.speaker": "Beaker",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p03.dialog.outro.line_01.text": "Excellent. The opinionated beaker has been satisfied.",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p04.title": "First Steps",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p04.introduces": "Beaker basics, taller stacks, prismatic beakers, and tinted beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p05.title": "First Steps",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p05.introduces": "Beaker basics, taller stacks, prismatic beakers, and tinted beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p06.title": "First Steps",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p06.introduces": "Beaker basics, taller stacks, prismatic beakers, and tinted beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p07.title": "First Steps",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p07.introduces": "Beaker basics, taller stacks, prismatic beakers, and tinted beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p08.title": "First Steps",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p08.introduces": "Beaker basics, taller stacks, prismatic beakers, and tinted beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p09.title": "First Steps",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p09.introduces": "Beaker basics, taller stacks, prismatic beakers, and tinted beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p10.title": "First Steps",
+      "adventure.starter_sprint.puzzle.starter_sprint-b01-p10.introduces": "Beaker basics, taller stacks, prismatic beakers, and tinted beakers",
+      "adventure.starter_sprint.block.block_01_tutorial.title": "First Steps",
+      "adventure.starter_sprint.block.block_01_tutorial.introduces": "Beaker basics, taller stacks, prismatic beakers, and tinted beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p01.title": "Cracked Glass",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p01.introduces": "Hidden cracked beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p02.title": "Cracked Glass",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p02.introduces": "Hidden cracked beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p03.title": "Cracked Glass",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p03.introduces": "Hidden cracked beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p04.title": "Cracked Glass",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p04.introduces": "Hidden cracked beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p05.title": "Cracked Glass",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p05.introduces": "Hidden cracked beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p06.title": "Cracked Glass",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p06.introduces": "Hidden cracked beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p07.title": "Cracked Glass",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p07.introduces": "Hidden cracked beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p08.title": "Cracked Glass",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p08.introduces": "Hidden cracked beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p09.title": "Cracked Glass",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p09.introduces": "Hidden cracked beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p10.title": "Cracked Glass",
+      "adventure.starter_sprint.puzzle.starter_sprint-b02-p10.introduces": "Hidden cracked beakers",
+      "adventure.starter_sprint.block.block_02_cracked.title": "Cracked Glass",
+      "adventure.starter_sprint.block.block_02_cracked.introduces": "Hidden cracked beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p01.title": "Tall Stacks",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p01.introduces": "More colors and five-segment beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p02.title": "Tall Stacks",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p02.introduces": "More colors and five-segment beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p03.title": "Tall Stacks",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p03.introduces": "More colors and five-segment beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p04.title": "Tall Stacks",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p04.introduces": "More colors and five-segment beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p05.title": "Tall Stacks",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p05.introduces": "More colors and five-segment beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p06.title": "Tall Stacks",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p06.introduces": "More colors and five-segment beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p07.title": "Tall Stacks",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p07.introduces": "More colors and five-segment beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p08.title": "Tall Stacks",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p08.introduces": "More colors and five-segment beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p09.title": "Tall Stacks",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p09.introduces": "More colors and five-segment beakers",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p10.title": "Tall Stacks",
+      "adventure.starter_sprint.puzzle.starter_sprint-b03-p10.introduces": "More colors and five-segment beakers",
+      "adventure.starter_sprint.block.block_03_tall_stacks.title": "Tall Stacks",
+      "adventure.starter_sprint.block.block_03_tall_stacks.introduces": "More colors and five-segment beakers",
+      "adventure.starter_sprint.title": "Starter Sprint",
+      "adventure.starter_sprint.description": "A 30-puzzle Adventure Mode MVP sprint with a short chill tutorial opening."
+    }
+  },
+  "scoring": {
+    "score_max": 1000,
+    "star_score_thresholds": {
+      "1": 0,
+      "2": 300,
+      "3": 550,
+      "4": 750,
+      "5": 900
+    },
+    "pour_limit_grace": "max(6, ceil(optimal_pours * 0.5))",
+    "default_cheats": {
+      "undo_max_uses": 4,
+      "extra_beaker_max_uses": 1,
+      "recovery_max_uses_each": 1,
+      "stir_cost": 2.0,
+      "swap_cost": 3.0,
+      "pipette_cost": 4.0,
+      "extra_beaker_penalty_ratio": 0.35,
+      "extra_beaker_min_penalty": 4.0
+    }
+  },
+  "summary": {
+    "optimal_pours": {
+      "min": 5,
+      "max": 15,
+      "average": 12.87
+    }
+  },
+  "blocks": [
+    {
+      "id": "block_01_tutorial",
+      "index": 1,
+      "title": "First Steps",
+      "title_key": "adventure.starter_sprint.block.block_01_tutorial.title",
+      "introduces": "Beaker basics, taller stacks, prismatic beakers, and tinted beakers",
+      "introduces_key": "adventure.starter_sprint.block.block_01_tutorial.introduces",
+      "unlock_next": {
+        "requires_all_solved": true,
+        "min_stars": 30,
+        "max_stars": 50
+      },
+      "rules": {
+        "capacity": 4,
+        "filled_beakers": 5,
+        "empty_beakers": 2,
+        "min_solution_depth": 6,
+        "max_solution_depth": 12,
+        "cheats": {
+          "undo_max_uses": 4,
+          "extra_beaker_max_uses": 1,
+          "recovery_max_uses_each": 1,
+          "stir_cost": 2.0,
+          "swap_cost": 3.0,
+          "pipette_cost": 4.0,
+          "extra_beaker_penalty_ratio": 0.35,
+          "extra_beaker_min_penalty": 4.0
+        },
+        "special_beakers": {
+          "cracked_count": 0,
+          "hidden_cracked_count": 0,
+          "visible_cracked_count": 0,
+          "prismatic_count": 1,
+          "tinted_count": 1
+        }
+      },
+      "puzzles": [
+        {
+          "id": "starter_sprint-b01-p01",
+          "index": 1,
+          "global_index": 1,
+          "title": "First Pour",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p01.title",
+          "introduces": "Basic sorting",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p01.introduces",
+          "dialog": {
+            "intro": [
+              {
+                "speaker": "Beaker",
+                "speaker_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p01.dialog.intro.line_01.speaker",
+                "text": "Pipette, the rainbow has gone lumpy. Put each color with its own family.",
+                "text_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p01.dialog.intro.line_01.text"
+              }
+            ],
+            "outro": [
+              {
+                "speaker": "Beaker",
+                "speaker_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p01.dialog.outro.line_01.speaker",
+                "text": "Good, Pipette. A small rainbow, but neatly folded.",
+                "text_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p01.dialog.outro.line_01.text"
+              }
+            ]
+          },
+          "board_code": "RP1mO<7&TQQu(00y",
+          "capacity": 3,
+          "filled_beakers": 3,
+          "empty_beakers": 2,
+          "beaker_count": 5,
+          "optimal_pours": 5,
+          "optimal_solution": "0310212312",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 11,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 0,
+            "hidden_cracked": 0,
+            "visible_cracked": 0,
+            "prismatic": 0,
+            "tinted": 0
+          },
+          "rules": {
+            "scoring": {
+              "mode": "chill",
+              "stars_on_solve": 5
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 0,
+              "prismatic_count": 0,
+              "tinted_count": 0
+            }
+          },
+          "difficulty": {
+            "solution_depth": 5,
+            "candidate": 1,
+            "solver_searched": 22,
+            "solver_visited": 34,
+            "solver_frontier_peak": 14,
+            "solver_elapsed_ms": 1,
+            "available_moves": 6,
+            "mixed_beakers": 3,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {}
+          }
+        },
+        {
+          "id": "starter_sprint-b01-p02",
+          "index": 2,
+          "global_index": 2,
+          "title": "Prismatic Preview",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p02.title",
+          "introduces": "Prismatic beaker bonus",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p02.introduces",
+          "dialog": {
+            "intro": [
+              {
+                "speaker": "Beaker",
+                "speaker_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p02.dialog.intro.line_01.speaker",
+                "text": "Pipette, this glass is proud and sparkly. Finish it well and it will applaud itself.",
+                "text_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p02.dialog.intro.line_01.text"
+              }
+            ],
+            "outro": [
+              {
+                "speaker": "Beaker",
+                "speaker_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p02.dialog.outro.line_01.speaker",
+                "text": "A glittering result. The prismatic beaker is being very modest about it.",
+                "text_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p02.dialog.outro.line_01.text"
+              }
+            ]
+          },
+          "board_code": "RP1xIXX=Aw#):0SS=ii",
+          "capacity": 4,
+          "filled_beakers": 4,
+          "empty_beakers": 2,
+          "beaker_count": 6,
+          "optimal_pours": 8,
+          "optimal_solution": "2434030410120104",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 14,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 0,
+            "hidden_cracked": 0,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 0
+          },
+          "rules": {
+            "scoring": {
+              "mode": "chill",
+              "stars_on_solve": 5
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 0,
+              "prismatic_count": 1,
+              "tinted_count": 0
+            }
+          },
+          "difficulty": {
+            "solution_depth": 8,
+            "candidate": 8,
+            "solver_searched": 122,
+            "solver_visited": 135,
+            "solver_frontier_peak": 28,
+            "solver_elapsed_ms": 4,
+            "available_moves": 8,
+            "mixed_beakers": 4,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 7
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b01-p03",
+          "index": 3,
+          "global_index": 3,
+          "title": "Tinted Target",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p03.title",
+          "introduces": "Tinted beaker bonus",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p03.introduces",
+          "dialog": {
+            "intro": [
+              {
+                "speaker": "Beaker",
+                "speaker_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p03.dialog.intro.line_01.speaker",
+                "text": "Now, Pipette, aim the right color into the tinted glass. It has opinions.",
+                "text_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p03.dialog.intro.line_01.text"
+              }
+            ],
+            "outro": [
+              {
+                "speaker": "Beaker",
+                "speaker_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p03.dialog.outro.line_01.speaker",
+                "text": "Excellent. The opinionated beaker has been satisfied.",
+                "text_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p03.dialog.outro.line_01.text"
+              }
+            ]
+          },
+          "board_code": "RP1yes{9:=ONx3p4^RFb/P)a",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 15,
+          "optimal_solution": "050610151025213130362312434645",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 23,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 0,
+            "hidden_cracked": 0,
+            "visible_cracked": 0,
+            "prismatic": 0,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "chill",
+              "stars_on_solve": 5
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 0,
+              "prismatic_count": 0,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 15,
+            "candidate": 1,
+            "solver_searched": 1390,
+            "solver_visited": 1426,
+            "solver_frontier_peak": 194,
+            "solver_elapsed_ms": 66,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {}
+          }
+        },
+        {
+          "id": "starter_sprint-b01-p04",
+          "index": 4,
+          "global_index": 4,
+          "title": "First Steps",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p04.title",
+          "introduces": "Beaker basics, taller stacks, prismatic beakers, and tinted beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p04.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1yes]L2:8RwI9#]FH5%:yL",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 12,
+          "optimal_solution": "150105303523124145042012",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 18,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 0,
+            "hidden_cracked": 0,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 0,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 12,
+            "candidate": 32,
+            "solver_searched": 739,
+            "solver_visited": 773,
+            "solver_frontier_peak": 119,
+            "solver_elapsed_ms": 32,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 31
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b01-p05",
+          "index": 5,
+          "global_index": 5,
+          "title": "First Steps",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p05.title",
+          "introduces": "Beaker basics, taller stacks, prismatic beakers, and tinted beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p05.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1yes]KN@F#+GVCu/V&C={x",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 12,
+          "optimal_solution": "052630321316014145463423",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 18,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 0,
+            "hidden_cracked": 0,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 0,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 12,
+            "candidate": 6,
+            "solver_searched": 454,
+            "solver_visited": 489,
+            "solver_frontier_peak": 69,
+            "solver_elapsed_ms": 18,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 5
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b01-p06",
+          "index": 6,
+          "global_index": 6,
+          "title": "First Steps",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p06.title",
+          "introduces": "Beaker basics, taller stacks, prismatic beakers, and tinted beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p06.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1yes]u/B*:k211Jc6AHP4k",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 11,
+          "optimal_solution": "0510213036232546434634",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 17,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 0,
+            "hidden_cracked": 0,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 0,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 11,
+            "candidate": 4,
+            "solver_searched": 372,
+            "solver_visited": 388,
+            "solver_frontier_peak": 82,
+            "solver_elapsed_ms": 16,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 3
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b01-p07",
+          "index": 7,
+          "global_index": 7,
+          "title": "First Steps",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p07.title",
+          "introduces": "Beaker basics, taller stacks, prismatic beakers, and tinted beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p07.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1yes]K3]6Z^gdmQ=000rpC",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 12,
+          "optimal_solution": "250205021015314043241213",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 18,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 0,
+            "hidden_cracked": 0,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 0,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 12,
+            "candidate": 33,
+            "solver_searched": 815,
+            "solver_visited": 860,
+            "solver_frontier_peak": 148,
+            "solver_elapsed_ms": 40,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 32
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b01-p08",
+          "index": 8,
+          "global_index": 8,
+          "title": "First Steps",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p08.title",
+          "introduces": "Beaker basics, taller stacks, prismatic beakers, and tinted beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p08.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1yes]KnkWy30k]?tli423R",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 12,
+          "optimal_solution": "353603061315202623401415",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 18,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 0,
+            "hidden_cracked": 0,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 0,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 12,
+            "candidate": 44,
+            "solver_searched": 349,
+            "solver_visited": 370,
+            "solver_frontier_peak": 49,
+            "solver_elapsed_ms": 13,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 43
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b01-p09",
+          "index": 9,
+          "global_index": 9,
+          "title": "First Steps",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p09.title",
+          "introduces": "Beaker basics, taller stacks, prismatic beakers, and tinted beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p09.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1yes]u*em#WF<JW)c&%Am1",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 11,
+          "optimal_solution": "0526301312164645242624",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 17,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 0,
+            "hidden_cracked": 0,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 0,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 11,
+            "candidate": 1,
+            "solver_searched": 493,
+            "solver_visited": 521,
+            "solver_frontier_peak": 109,
+            "solver_elapsed_ms": 18,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {}
+          }
+        },
+        {
+          "id": "starter_sprint-b01-p10",
+          "index": 10,
+          "global_index": 10,
+          "title": "First Steps",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p10.title",
+          "introduces": "Beaker basics, taller stacks, prismatic beakers, and tinted beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b01-p10.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1yes]vaRj.nz9[t^bMGO1.",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 11,
+          "optimal_solution": "0526123035463403041315",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 17,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 0,
+            "hidden_cracked": 0,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 0,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 11,
+            "candidate": 2,
+            "solver_searched": 311,
+            "solver_visited": 328,
+            "solver_frontier_peak": 49,
+            "solver_elapsed_ms": 11,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "block_02_cracked",
+      "index": 2,
+      "title": "Cracked Glass",
+      "title_key": "adventure.starter_sprint.block.block_02_cracked.title",
+      "introduces": "Hidden cracked beakers",
+      "introduces_key": "adventure.starter_sprint.block.block_02_cracked.introduces",
+      "unlock_next": {
+        "requires_all_solved": true,
+        "min_stars": 32,
+        "max_stars": 50
+      },
+      "rules": {
+        "capacity": 4,
+        "filled_beakers": 5,
+        "empty_beakers": 2,
+        "min_solution_depth": 7,
+        "max_solution_depth": 14,
+        "cheats": {
+          "undo_max_uses": 4,
+          "extra_beaker_max_uses": 1,
+          "recovery_max_uses_each": 1,
+          "stir_cost": 2.0,
+          "swap_cost": 3.0,
+          "pipette_cost": 4.0,
+          "extra_beaker_penalty_ratio": 0.35,
+          "extra_beaker_min_penalty": 4.0
+        },
+        "special_beakers": {
+          "cracked_count": 1,
+          "hidden_cracked_count": 1,
+          "visible_cracked_count": 0,
+          "prismatic_count": 1,
+          "tinted_count": 1
+        }
+      },
+      "puzzles": [
+        {
+          "id": "starter_sprint-b02-p01",
+          "index": 1,
+          "global_index": 11,
+          "title": "Cracked Glass",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p01.title",
+          "introduces": "Hidden cracked beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p01.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1ydP1S10ZvT0fKL/+S(a",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 14,
+          "optimal_solution": "2526020506101545420410163034",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 21,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 14,
+            "candidate": 3,
+            "solver_searched": 872,
+            "solver_visited": 939,
+            "solver_frontier_peak": 116,
+            "solver_elapsed_ms": 35,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 2
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b02-p02",
+          "index": 2,
+          "global_index": 12,
+          "title": "Cracked Glass",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p02.title",
+          "introduces": "Hidden cracked beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p02.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1ydFtA5#oiY7>$AYGaF%",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 13,
+          "optimal_solution": "05162126253035323546421416",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 20,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 13,
+            "candidate": 7,
+            "solver_searched": 1040,
+            "solver_visited": 1143,
+            "solver_frontier_peak": 180,
+            "solver_elapsed_ms": 41,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 6
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b02-p03",
+          "index": 3,
+          "global_index": 13,
+          "title": "Cracked Glass",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p03.title",
+          "introduces": "Hidden cracked beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p03.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1ydI=}H9H7$5S4h4q:po",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 14,
+          "optimal_solution": "0506050610201210123643463435",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 21,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 14,
+            "candidate": 4,
+            "solver_searched": 1185,
+            "solver_visited": 1260,
+            "solver_frontier_peak": 175,
+            "solver_elapsed_ms": 46,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 3
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b02-p04",
+          "index": 4,
+          "global_index": 14,
+          "title": "Cracked Glass",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p04.title",
+          "introduces": "Hidden cracked beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p04.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1ydIOx5H5L>Fq{u8p@A}",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 13,
+          "optimal_solution": "05061615261216354304203243",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 20,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 13,
+            "candidate": 2,
+            "solver_searched": 1771,
+            "solver_visited": 1980,
+            "solver_frontier_peak": 370,
+            "solver_elapsed_ms": 75,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 1
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b02-p05",
+          "index": 5,
+          "global_index": 15,
+          "title": "Cracked Glass",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p05.title",
+          "introduces": "Hidden cracked beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p05.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1ydOyW5*G219eQD}b(^Q",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 14,
+          "optimal_solution": "0506161520302325323603414214",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 21,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 14,
+            "candidate": 1,
+            "solver_searched": 1805,
+            "solver_visited": 1977,
+            "solver_frontier_peak": 322,
+            "solver_elapsed_ms": 70,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {}
+          }
+        },
+        {
+          "id": "starter_sprint-b02-p06",
+          "index": 6,
+          "global_index": 16,
+          "title": "Cracked Glass",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p06.title",
+          "introduces": "Hidden cracked beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p06.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1ydGp:bQ35Ls=-:!FFny",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 11,
+          "optimal_solution": "0510162126323523464014",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 17,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 11,
+            "candidate": 3,
+            "solver_searched": 752,
+            "solver_visited": 856,
+            "solver_frontier_peak": 162,
+            "solver_elapsed_ms": 28,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 2
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b02-p07",
+          "index": 7,
+          "global_index": 17,
+          "title": "Cracked Glass",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p07.title",
+          "introduces": "Hidden cracked beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p07.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1ydICshEIn8QLp2]i6Wr",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 14,
+          "optimal_solution": "2512163635310306202532414504",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 21,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 14,
+            "candidate": 4,
+            "solver_searched": 1541,
+            "solver_visited": 1640,
+            "solver_frontier_peak": 218,
+            "solver_elapsed_ms": 62,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 3
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b02-p08",
+          "index": 8,
+          "global_index": 18,
+          "title": "Cracked Glass",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p08.title",
+          "introduces": "Hidden cracked beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p08.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1ydH(Im=FCT0/dV%gYNb",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 13,
+          "optimal_solution": "25121531362312450406404624",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 20,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 13,
+            "candidate": 1,
+            "solver_searched": 1190,
+            "solver_visited": 1258,
+            "solver_frontier_peak": 197,
+            "solver_elapsed_ms": 46,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {}
+          }
+        },
+        {
+          "id": "starter_sprint-b02-p09",
+          "index": 9,
+          "global_index": 19,
+          "title": "Cracked Glass",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p09.title",
+          "introduces": "Hidden cracked beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p09.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1ydH{UN4(%*-eaD#0r--",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 13,
+          "optimal_solution": "45143135232524320306131612",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 20,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 13,
+            "candidate": 2,
+            "solver_searched": 1232,
+            "solver_visited": 1340,
+            "solver_frontier_peak": 177,
+            "solver_elapsed_ms": 48,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 1
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b02-p10",
+          "index": 10,
+          "global_index": 20,
+          "title": "Cracked Glass",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p10.title",
+          "introduces": "Hidden cracked beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b02-p10.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1ydFC7hE)p:3x=8796:X",
+          "capacity": 4,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 14,
+          "optimal_solution": "0506354534301316154324262024",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 21,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 14,
+            "candidate": 1,
+            "solver_searched": 1096,
+            "solver_visited": 1217,
+            "solver_frontier_peak": 172,
+            "solver_elapsed_ms": 45,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": "block_03_tall_stacks",
+      "index": 3,
+      "title": "Tall Stacks",
+      "title_key": "adventure.starter_sprint.block.block_03_tall_stacks.title",
+      "introduces": "More colors and five-segment beakers",
+      "introduces_key": "adventure.starter_sprint.block.block_03_tall_stacks.introduces",
+      "unlock_next": {
+        "requires_all_solved": true,
+        "min_stars": 34,
+        "max_stars": 50
+      },
+      "rules": {
+        "capacity": 5,
+        "filled_beakers": 5,
+        "empty_beakers": 2,
+        "min_solution_depth": 8,
+        "max_solution_depth": 15,
+        "cheats": {
+          "undo_max_uses": 4,
+          "extra_beaker_max_uses": 1,
+          "recovery_max_uses_each": 1,
+          "stir_cost": 2.0,
+          "swap_cost": 3.0,
+          "pipette_cost": 4.0,
+          "extra_beaker_penalty_ratio": 0.35,
+          "extra_beaker_min_penalty": 4.0
+        },
+        "special_beakers": {
+          "cracked_count": 1,
+          "hidden_cracked_count": 1,
+          "visible_cracked_count": 0,
+          "prismatic_count": 1,
+          "tinted_count": 1
+        }
+      },
+      "puzzles": [
+        {
+          "id": "starter_sprint-b03-p01",
+          "index": 1,
+          "global_index": 21,
+          "title": "Tall Stacks",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p01.title",
+          "introduces": "More colors and five-segment beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p01.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1IB{GYWV)A<(JBi{Koyprc",
+          "capacity": 5,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 15,
+          "optimal_solution": "051516010621253630234546403431",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 23,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 15,
+            "candidate": 7,
+            "solver_searched": 1722,
+            "solver_visited": 1843,
+            "solver_frontier_peak": 233,
+            "solver_elapsed_ms": 110,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 6
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b03-p02",
+          "index": 2,
+          "global_index": 22,
+          "title": "Tall Stacks",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p02.title",
+          "introduces": "More colors and five-segment beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p02.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1IB{zzU!)badKuO1xAf@va",
+          "capacity": 5,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 14,
+          "optimal_solution": "1526123503023035451412414614",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 21,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 14,
+            "candidate": 30,
+            "solver_searched": 2033,
+            "solver_visited": 2178,
+            "solver_frontier_peak": 307,
+            "solver_elapsed_ms": 125,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 29
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b03-p03",
+          "index": 3,
+          "global_index": 23,
+          "title": "Tall Stacks",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p03.title",
+          "introduces": "More colors and five-segment beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p03.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1IB}AtH6jr<y783mnc4.3s",
+          "capacity": 5,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 15,
+          "optimal_solution": "050616203031351315312326204345",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 23,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 15,
+            "candidate": 2,
+            "solver_searched": 1267,
+            "solver_visited": 1466,
+            "solver_frontier_peak": 235,
+            "solver_elapsed_ms": 69,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 1
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b03-p04",
+          "index": 4,
+          "global_index": 24,
+          "title": "Tall Stacks",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p04.title",
+          "introduces": "More colors and five-segment beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p04.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1IB$*EFk07%y>eKGoAn^S=",
+          "capacity": 5,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 13,
+          "optimal_solution": "25363523021015310301024246",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 20,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 13,
+            "candidate": 30,
+            "solver_searched": 1086,
+            "solver_visited": 1300,
+            "solver_frontier_peak": 255,
+            "solver_elapsed_ms": 53,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 29
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b03-p05",
+          "index": 5,
+          "global_index": 25,
+          "title": "Tall Stacks",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p05.title",
+          "introduces": "More colors and five-segment beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p05.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1IC29FW&?Q(y6Z*UwcJkre",
+          "capacity": 5,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 15,
+          "optimal_solution": "251201051045412432352324323432",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 23,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 15,
+            "candidate": 2,
+            "solver_searched": 2860,
+            "solver_visited": 3077,
+            "solver_frontier_peak": 441,
+            "solver_elapsed_ms": 175,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 1
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b03-p06",
+          "index": 6,
+          "global_index": 26,
+          "title": "Tall Stacks",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p06.title",
+          "introduces": "More colors and five-segment beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p06.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1IB{!]ROYSfyetnU3&]uh9",
+          "capacity": 5,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 14,
+          "optimal_solution": "3536131541450401032026401413",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 21,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 14,
+            "candidate": 24,
+            "solver_searched": 1968,
+            "solver_visited": 2241,
+            "solver_frontier_peak": 364,
+            "solver_elapsed_ms": 110,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 23
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b03-p07",
+          "index": 7,
+          "global_index": 27,
+          "title": "Tall Stacks",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p07.title",
+          "introduces": "More colors and five-segment beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p07.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1IB@.mQ^qpAR#TByKn{tfX",
+          "capacity": 5,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 15,
+          "optimal_solution": "150106052026363513150142464142",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 23,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 15,
+            "candidate": 52,
+            "solver_searched": 1702,
+            "solver_visited": 1820,
+            "solver_frontier_peak": 228,
+            "solver_elapsed_ms": 93,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 51
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b03-p08",
+          "index": 8,
+          "global_index": 28,
+          "title": "Tall Stacks",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p08.title",
+          "introduces": "More colors and five-segment beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p08.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1IB#nyR#<99dh2njc<2bey",
+          "capacity": 5,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 15,
+          "optimal_solution": "051016264045401401023036354024",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 23,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 15,
+            "candidate": 23,
+            "solver_searched": 2663,
+            "solver_visited": 2772,
+            "solver_frontier_peak": 425,
+            "solver_elapsed_ms": 172,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 22
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b03-p09",
+          "index": 9,
+          "global_index": 29,
+          "title": "Tall Stacks",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p09.title",
+          "introduces": "More colors and five-segment beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p09.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1IB%md:v@VryA%m.yYGg}?",
+          "capacity": 5,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 14,
+          "optimal_solution": "2536354314154104060302242632",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 21,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 14,
+            "candidate": 3,
+            "solver_searched": 1091,
+            "solver_visited": 1234,
+            "solver_frontier_peak": 188,
+            "solver_elapsed_ms": 62,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 2
+            }
+          }
+        },
+        {
+          "id": "starter_sprint-b03-p10",
+          "index": 10,
+          "global_index": 30,
+          "title": "Tall Stacks",
+          "title_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p10.title",
+          "introduces": "More colors and five-segment beakers",
+          "introduces_key": "adventure.starter_sprint.puzzle.starter_sprint-b03-p10.introduces",
+          "dialog": {
+            "intro": [],
+            "outro": []
+          },
+          "board_code": "RP1IB%7}LUm<-efCpIxBYQ].",
+          "capacity": 5,
+          "filled_beakers": 5,
+          "empty_beakers": 2,
+          "beaker_count": 7,
+          "optimal_pours": 14,
+          "optimal_solution": "1536134145461431030504232512",
+          "optimal_solution_format": "hex_source_dest_pairs",
+          "pour_limit": 21,
+          "star_score_thresholds": {
+            "1": 0,
+            "2": 300,
+            "3": 550,
+            "4": 750,
+            "5": 900
+          },
+          "traits": {
+            "cracked": 1,
+            "hidden_cracked": 1,
+            "visible_cracked": 0,
+            "prismatic": 1,
+            "tinted": 1
+          },
+          "rules": {
+            "scoring": {
+              "mode": "scored",
+              "stars_on_solve": 0
+            },
+            "cheats": {
+              "undo_max_uses": 4,
+              "extra_beaker_max_uses": 1,
+              "recovery_max_uses_each": 1,
+              "stir_cost": 2.0,
+              "swap_cost": 3.0,
+              "pipette_cost": 4.0,
+              "extra_beaker_penalty_ratio": 0.35,
+              "extra_beaker_min_penalty": 4.0
+            },
+            "special_beakers": {
+              "visible_cracked_count": 0,
+              "hidden_cracked_count": 1,
+              "prismatic_count": 1,
+              "tinted_count": 1
+            }
+          },
+          "difficulty": {
+            "solution_depth": 14,
+            "candidate": 88,
+            "solver_searched": 2156,
+            "solver_visited": 2303,
+            "solver_frontier_peak": 351,
+            "solver_elapsed_ms": 118,
+            "available_moves": 10,
+            "mixed_beakers": 5,
+            "uniform_partial_beakers": 0,
+            "full_uniform_beakers": 0,
+            "empty_beakers": 2
+          },
+          "generator": {
+            "rejections": {
+              "above max depth": 87
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

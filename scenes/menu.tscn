@@ -45,19 +45,25 @@ grow_vertical = 2
 [node name="HanoiButton" type="Button" parent="Buttons"]
 custom_minimum_size = Vector2(270, 180)
 theme_override_font_sizes/font_size = 22
-text = "🗼 Rainbow Hanoi\nBonus puzzle"
+text = "Menu Mode Hanoi Compact"
+autowrap_mode = 3
+
+[node name="AdventureButton" type="Button" parent="Buttons"]
+custom_minimum_size = Vector2(270, 180)
+theme_override_font_sizes/font_size = 22
+text = "Menu Mode Adventure Compact"
 autowrap_mode = 3
 
 [node name="BeakerButton" type="Button" parent="Buttons"]
 custom_minimum_size = Vector2(270, 180)
 theme_override_font_sizes/font_size = 22
-text = "🧪 Rainbow Pour\nSort colors into beakers"
+text = "Menu Mode Pour Compact"
 autowrap_mode = 3
 
 [node name="BuilderButton" type="Button" parent="Buttons"]
 custom_minimum_size = Vector2(270, 180)
 theme_override_font_sizes/font_size = 22
-text = "🪅 Board Builder\nMake puzzles"
+text = "Menu Mode Builder Compact"
 autowrap_mode = 3
 
 [node name="VersionLabel" type="Label" parent="."]
@@ -79,5 +85,6 @@ horizontal_alignment = 2
 vertical_alignment = 1
 
 [connection signal="pressed" from="Buttons/HanoiButton" to="." method="_on_hanoi_pressed"]
+[connection signal="pressed" from="Buttons/AdventureButton" to="." method="_on_adventure_pressed"]
 [connection signal="pressed" from="Buttons/BeakerButton" to="." method="_on_beaker_pressed"]
 [connection signal="pressed" from="Buttons/BuilderButton" to="." method="_on_builder_pressed"]
