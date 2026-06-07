@@ -6,6 +6,24 @@ A colorful Godot 4.6 pour puzzle project with a bonus Rainbow Hanoi side mode.
 
 Rainbow Pour includes adjustable beaker capacity, difficulty settings, special beaker traits, scoring, mulligan undo, sound effects, loss conditions, and optimal-pour goal tracking.
 
+## Screenshots
+
+Portrait:
+
+<p>
+  <img src="docs/screenshots/main-menu.png" alt="Rainbow Pour main menu" width="260">
+  <img src="docs/screenshots/rainbow-pour-game.png" alt="Rainbow Pour puzzle board" width="260">
+  <img src="docs/screenshots/rainbow-hanoi-game.png" alt="Rainbow Hanoi bonus puzzle" width="260">
+</p>
+
+Landscape:
+
+<p>
+  <img src="docs/screenshots/main-menu-landscape.png" alt="Rainbow Pour main menu in landscape" width="360">
+  <img src="docs/screenshots/rainbow-pour-game-landscape.png" alt="Rainbow Pour puzzle board in landscape" width="360">
+  <img src="docs/screenshots/rainbow-hanoi-game-landscape.png" alt="Rainbow Hanoi bonus puzzle in landscape" width="360">
+</p>
+
 ## Getting Started
 
 1. Install Godot 4.x from https://godotengine.org/
