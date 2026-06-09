@@ -17,7 +17,13 @@ var _time := 0.0
 func _ready() -> void:
 	color = Color(0.035, 0.045, 0.080, 1.0)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sync_to_viewport()
+	get_viewport().size_changed.connect(_sync_to_viewport)
 	set_process(animated)
+
+func _sync_to_viewport() -> void:
+	size = get_viewport_rect().size
+	queue_redraw()
 
 func _process(delta: float) -> void:
 	_time += delta

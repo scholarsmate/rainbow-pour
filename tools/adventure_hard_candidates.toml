@@ -1,0 +1,143 @@
+[bank]
+id = "hard_candidates_20260608"
+seed = 20260608
+target_total = 600
+max_runtime_minutes = 720
+status_interval = 10
+output = "build/adventure_candidates/hard_candidates_20260608.jsonl"
+summary_output = "build/adventure_candidates/hard_candidates_20260608.summary.json"
+
+[defaults]
+candidate_limit = 100
+node_limit = 240000
+frontier_limit = 100000
+solver_timeout_ms = 1100
+requires_all_solved = true
+capacity = 4
+filled_beakers = 6
+empty_beakers = 2
+min_solution_depth = 12
+max_solution_depth = 26
+cracked_count = 0
+hidden_cracked_count = 0
+visible_cracked_count = 0
+prismatic_count = 1
+tinted_count = 1
+embed_cached_goal_for_cracked = true
+
+[defaults.cheats]
+undo_max_uses = 3
+extra_beaker_max_uses = 1
+recovery_max_uses_each = 1
+stir_cost = 3.0
+swap_cost = 4.0
+pipette_cost = 5.0
+extra_beaker_penalty_ratio = 0.45
+extra_beaker_min_penalty = 5.0
+
+[[profiles]]
+id = "hard_four_slot_bonus"
+title = "Hard Four-Slot Bonus"
+puzzle_title_prefix = "Hard Four"
+target_count = 150
+capacity = 4
+filled_beakers = 6
+empty_beakers = 2
+min_solution_depth = 12
+max_solution_depth = 22
+prismatic_count = 1
+tinted_count = 1
+
+[[profiles]]
+id = "hidden_crack_four_slot"
+title = "Hidden Crack Four-Slot"
+puzzle_title_prefix = "Hidden Crack Four"
+target_count = 120
+capacity = 4
+filled_beakers = 6
+empty_beakers = 2
+min_solution_depth = 12
+max_solution_depth = 23
+cracked_count = 1
+hidden_cracked_count = 1
+visible_cracked_count = 0
+prismatic_count = 1
+tinted_count = 1
+
+[[profiles]]
+id = "tall_five_slot"
+title = "Tall Five-Slot"
+puzzle_title_prefix = "Tall Five"
+target_count = 130
+capacity = 5
+filled_beakers = 6
+empty_beakers = 2
+min_solution_depth = 13
+max_solution_depth = 25
+cracked_count = 1
+hidden_cracked_count = 1
+visible_cracked_count = 0
+prismatic_count = 1
+tinted_count = 1
+node_limit = 280000
+frontier_limit = 115000
+solver_timeout_ms = 1300
+
+[[profiles]]
+id = "double_crack_five_slot"
+title = "Double Crack Five-Slot"
+puzzle_title_prefix = "Double Crack Five"
+target_count = 90
+capacity = 5
+filled_beakers = 6
+empty_beakers = 2
+min_solution_depth = 13
+max_solution_depth = 26
+cracked_count = 2
+hidden_cracked_count = 1
+visible_cracked_count = 1
+prismatic_count = 1
+tinted_count = 1
+node_limit = 280000
+frontier_limit = 115000
+solver_timeout_ms = 1300
+
+[[profiles]]
+id = "six_slot_practice"
+title = "Six-Slot Practice"
+puzzle_title_prefix = "Six Practice"
+target_count = 70
+capacity = 6
+filled_beakers = 5
+empty_beakers = 2
+min_solution_depth = 12
+max_solution_depth = 26
+cracked_count = 1
+hidden_cracked_count = 1
+visible_cracked_count = 0
+prismatic_count = 1
+tinted_count = 2
+candidate_limit = 80
+node_limit = 300000
+frontier_limit = 125000
+solver_timeout_ms = 1400
+
+[[profiles]]
+id = "six_slot_hard"
+title = "Six-Slot Hard"
+puzzle_title_prefix = "Six Hard"
+target_count = 40
+capacity = 6
+filled_beakers = 6
+empty_beakers = 2
+min_solution_depth = 14
+max_solution_depth = 28
+cracked_count = 1
+hidden_cracked_count = 1
+visible_cracked_count = 0
+prismatic_count = 1
+tinted_count = 2
+candidate_limit = 60
+node_limit = 330000
+frontier_limit = 135000
+solver_timeout_ms = 1500

@@ -1,73 +1,74 @@
 # Development Guide
 
-## Current Implementation
+## Project Snapshot
 
-The project includes:
+Rainbow Pour is a Godot 4.6 puzzle game. The primary game is a water-sort style pour puzzle with scoring, chill mode, special beakers, cheats, sounds, animations, translations, and Android export support. Rainbow Hanoi remains available as a bonus side mode.
 
-1. **Project Configuration** (`project.godot`)
-   - Set up for Godot 4.6
-   - 1280x720 resolution
-   - 2D rendering mode
+## Primary Entry Points
 
-2. **Main Scene** (`scenes/main.tscn`)
-   - Background
-   - UI elements (title, move counter, instructions, reset button)
-   - Towers node
+- `project.godot` - Godot project configuration, autoloads, input, localization, and export metadata.
+- `scenes/menu.tscn` / `scripts/menu.gd` - Main menu, mode selection, settings, palette controls, and navigation.
+- `scenes/main.tscn` / `scripts/main.gd` - Rainbow Pour screen controller, HUD, scoring, solved/loss modals, cheat UI, and game-state orchestration.
+- `scripts/towers.gd` - Rainbow Pour board state, puzzle generation/import, rules, rendering, input handling, special beakers, animations, and cheat execution.
+- `scenes/hanoi.tscn` / `scripts/hanoi.gd` - Rainbow Hanoi side mode.
+- `scripts/game_settings.gd` - Persistent settings, palettes, difficulty labels, accessibility options, chill mode, and special-beaker toggles.
+- `translations/strings.csv` - Source of truth for user-visible strings and UI glyph display values.
+- `docs/ANDROID.md` - Android build and phone-testing workflow.
 
-3. **Game Logic** (`scripts/`)
-   - `main.gd`: Main game controller, handles moves, win condition
-   - `towers.gd`: Tower and disk logic, rendering, input handling
+## Current Feature Surface
 
-## Features Implemented
+- Core Rainbow Pour puzzle generation with configurable difficulty, beaker count, capacity, and optimal-pour goal tracking.
+- Score-focused mode with move scoring, star awards, bonuses, and loss conditions.
+- Chill mode without score pressure, with each cheat available once per game and redo available up to four times.
+- Cheats including undo/redo, extra beaker, stir, swap, and pipette transfer.
+- Pipette animations and sampled pipette sounds for transfer, stir, and swap actions.
+- Special beakers including cracked, tinted, and prismatic behavior.
+- Delayed cracked-beaker reveal with impact animation and distinct cracking audio.
+- Beaker accessibility symbols, palette selection, localized UI text, and mobile-friendly settings controls.
+- Android debug APK export and phone testing.
+- Rainbow Hanoi side mode.
 
-- ✅ 3 towers with configurable disk count (default: 5)
-- ✅ Water Sort: beaker capacity slider (in-game, Water Sort screen only)
-- ✅ Rainbow-colored disks
-- ✅ Click-based disk movement
-- ✅ Valid move checking (larger disks can't go on smaller ones)
-- ✅ Move counter
-- ✅ Win detection
-- ✅ Reset functionality
-- ✅ Visual feedback with colored disks
+## Development Workflow
 
-## Game Rules
+Run the project from the repo root:
 
-1. Click a tower to select it (must have disks)
-2. Click another tower to move the top disk
-3. Larger disks cannot be placed on smaller disks
-4. Goal: Move all disks from the leftmost tower to the rightmost tower
+```powershell
+godot --path .
+```
 
-## Next Steps / Future Enhancements
+Refresh imports and catch parse/import errors without opening the editor:
 
-- [ ] Build pre-generated Water Sort puzzle progression:
-  - Add an offline generator script that creates a large puzzle pool, solves each board, and records metadata.
-  - Generate roughly 500 puzzles per batch, then sort by difficulty using optimal pours, branching factor, dead-end risk, capacity, beaker count, and solver time.
-  - Emit a durable data file for the game to load, likely CSV for simple iteration or SQLite if level metadata/progress queries get richer.
-  - Add level progression and per-level score tracking so players can improve scores across the full set, similar to Overcooked-style stage mastery.
-- [ ] Add animations for disk movement
-- [ ] Add sound effects
-- [ ] Add particle effects on successful moves
-- [ ] Add difficulty levels (different disk counts)
-- [ ] Add timer/speed mode
-- [ ] Add undo functionality
-- [ ] Add optimal move hint system
-- [ ] Add celebration screen on win
-- [ ] Add music
-- [ ] Add visual selection indicator for selected tower
-- [ ] Add disk dragging support
+```powershell
+godot --headless --path . --editor --quit
+```
 
-## How to Run
+Export the current Android debug APK:
 
-1. Install Godot 4.x from https://godotengine.org/download
-2. Open Godot
-3. Click "Import"
-4. Navigate to this directory and select `project.godot`
-5. Click "Import & Edit"
-6. Press F5 or click the Play button to run the game
+```powershell
+godot --headless --path . --export-debug Android build/rainbow-pour.apk
+```
 
-## Customization
+Check for whitespace problems before committing:
 
-You can easily customize the game by editing constants in `scripts/towers.gd`:
-- `TOWER_COUNT`: Number of towers (default: 3)
-- `DISK_COUNT`: Number of disks (default: 5)
-- Color array: Customize disk colors
+```powershell
+git diff --check
+```
+
+## Refactor Notes
+
+The highest-complexity files are `scripts/main.gd` and `scripts/towers.gd`. Prefer small, behavior-preserving extractions over large file splits unless a feature clearly needs a new ownership boundary.
+
+Good future cleanup targets:
+
+- Move solved/loss modal assembly out of `main.gd`.
+- Move cheat button state and cheat history text formatting out of `main.gd`.
+- Move pipette animation drawing/state helpers out of `towers.gd` once the interface settles.
+- Move board generation and solvability scoring out of `towers.gd`.
+- Add focused regression tests around cheat legality, chill-mode cheat limits, cracked-beaker reveal, and bonus scoring if a GDScript test harness is added.
+
+## Documentation Checks
+
+- Keep `README.md` focused on player-facing project overview and setup.
+- Keep `docs/ANDROID.md` current with the local export path and Android SDK requirements.
+- Keep `TRANSLATIONS.md` aligned with `translations/strings.csv` and new UI surfaces.
+- After changing strings, run the Godot headless import command above and inspect generated translation import changes.
